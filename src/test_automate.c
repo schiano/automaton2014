@@ -44,7 +44,9 @@ int main(){
 	ajouter_transition(automate, 3, 'b', 4);
 	ajouter_transition(automate, 3, 'c', 1);
 	ajouter_transition(automate, 4, 'a', 4);
+	ajouter_epsilon_transition(automate, 4, 4);	
 	ajouter_etat_final(automate, 4);
+
 
 	Automate* reverse = miroir(automate);
 	

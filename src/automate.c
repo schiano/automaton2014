@@ -153,6 +153,11 @@ void ajouter_transition(
 	ajouter_element( ens, fin );
 }
 
+void ajouter_epsilon_transition(Automate * automate, int origine, int fin)
+{
+	ajouter_transition(automate, origine, '#' ,fin);
+}
+
 void ajouter_etat_final(
 	Automate * automate, int etat_final
 ){
