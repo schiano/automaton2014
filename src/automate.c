@@ -374,15 +374,15 @@ Automate *automate_accessible( const Automate * automate){
 	A_FAIRE_RETURN(NULL);
 }
 
-void reverse_transition(int origine, char lettre, int fin, void* data)
+void reverse_transition(int origine, char lettre, int fin, void* automate)
 {
-	ajouter_transition(data, fin, lettre, origine);
+	ajouter_transition(automate, fin, lettre, origine);
 }
 
 Automate *miroir( const Automate * automate){
 	Automate* clone = creer_automate();
 	ajouter_elements(clone->initiaux, automate->finaux);
-	ajouter_elements(clone->initiaux, automate->initiaux);
+	ajouter_elements(clone->finaux, automate->initiaux);
 
 	pour_toute_transition(automate, reverse_transition, clone);
 	return clone;
