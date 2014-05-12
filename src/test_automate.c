@@ -27,33 +27,26 @@
 int main(){
 	Automate* automate = creer_automate();
 
-	int i;
+	// Les états seront ajoutés automatiquement
 
-	for (i = 0; i < 5; i++)
-	{
-		ajouter_etat(automate, i);
-	}
-
-	ajouter_etat_initial(automate, 0);
-	ajouter_transition(automate, 0, 'a', 1);
-	ajouter_transition(automate, 0, 'b', 0);
-	ajouter_transition(automate, 0, 'c', 2);
+	ajouter_etat_initial(automate, 1);
 	ajouter_transition(automate, 1, 'b', 2);
-	ajouter_transition(automate, 1, 'c', 1);
-	ajouter_transition(automate, 2, 'a', 3);
-	ajouter_transition(automate, 3, 'b', 4);
-	ajouter_transition(automate, 3, 'c', 1);
-	ajouter_transition(automate, 4, 'a', 4);
-	ajouter_epsilon_transition(automate, 4, 4);	
-	ajouter_etat_final(automate, 4);
+	ajouter_transition(automate, 1, 'a', 3);
+	ajouter_transition(automate, 1, 'a', 2);
+	ajouter_transition(automate, 4, 'b', 1);	
+	ajouter_transition(automate, 2, 'a', 4);
+	ajouter_transition(automate, 3, 'a', 2);
+	ajouter_transition(automate, 3, 'b', 3);
+	ajouter_transition(automate, 4, 'b', 3);
+	ajouter_etat_final(automate, 4);	
 
+	char mot[] = "babb";
 
-	Automate* reverse = miroir(automate);
-	
-	printf("Automate....\n");
-	print_automate(automate);
-	printf("Miroir......\n");
-	print_automate(reverse);
+	Ensemble * etats = delta_star(automate, get_initiaux(automate), mot);
+	print_ensemble(etats, NULL);
+
+	liberer_automate(automate);
+	xfree(etats);
 
 	exit(1);
 }

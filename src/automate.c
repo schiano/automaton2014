@@ -212,7 +212,16 @@ Ensemble * delta(
 Ensemble * delta_star(
 	const Automate* automate, const Ensemble * etats_courants, const char* mot
 ){
-	A_FAIRE_RETURN( creer_ensemble(NULL,NULL,NULL) );
+	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
+	Ensemble * fins = copier_ensemble(etats_courants);
+	int i;
+	for(i = 0; i < strlen(mot); i++)
+	{
+		fins = delta(automate, fins, mot[i]);
+		ajouter_elements(res, fins);
+	}
+
+	return res;
 }
 
 void pour_toute_transition(
