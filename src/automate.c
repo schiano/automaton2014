@@ -114,15 +114,15 @@ const Ensemble * get_etats( const Automate* automate ){
 }
 
 const Ensemble * get_initiaux( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	return automate->initiaux;
 }
 
 const Ensemble * get_finaux( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	return automate->finaux;
 }
 
 const Ensemble * get_alphabet( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	return automate->alphabet;
 }
 
 void ajouter_etat( Automate * automate, int etat ){
@@ -130,7 +130,7 @@ void ajouter_etat( Automate * automate, int etat ){
 }
 
 void ajouter_lettre( Automate * automate, char lettre ){
-	A_FAIRE;
+	ajouter_element(automate->alphabet, lettre);
 }
 
 void ajouter_transition(
@@ -156,13 +156,13 @@ void ajouter_transition(
 void ajouter_etat_final(
 	Automate * automate, int etat_final
 ){
-	A_FAIRE;
+	ajouter_element(automate->finaux, etat_final);
 }
 
 void ajouter_etat_initial(
 	Automate * automate, int etat_initial
 ){
-	A_FAIRE;
+	ajouter_element(automate->initiaux, etat_final);
 }
 
 const Ensemble * voisins( const Automate* automate, int origine, char lettre ){
@@ -428,15 +428,15 @@ int est_un_etat_de_l_automate( const Automate* automate, int etat ){
 }
 
 int est_un_etat_initial_de_l_automate( const Automate* automate, int etat ){
-	A_FAIRE_RETURN(0);
+	return est_dans_l_ensemble(get_initiaux(automate), etat);
 }
 
 int est_un_etat_final_de_l_automate( const Automate* automate, int etat ){
-	A_FAIRE_RETURN(0);
+	return est_dans_l_ensemble(get_finaux(automate), etat);
 }
 
 int est_une_lettre_de_l_automate( const Automate* automate, char lettre ){
-	A_FAIRE_RETURN(0);
+	return est_dans_l_ensemble(get_alphabet(automate), etat);
 }
 
 void print_ensemble_2( const intptr_t ens ){
