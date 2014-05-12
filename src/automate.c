@@ -491,5 +491,16 @@ void print_automate( const Automate * automate ){
 }
 
 int le_mot_est_reconnu( const Automate* automate, const char* mot ){
-	A_FAIRE_RETURN(0);
+	Ensemble * etats = delta_star(automate, get_initiaux(automate), mot);
+	int reconnu = 0;
+	Ensemble_iterateur it;
+	for( 
+		it = premier_iterateur_ensemble( etats );
+		! iterateur_ensemble_est_vide( it );
+		it = iterateur_suivant_ensemble( it )
+	){
+		if ((reconnu = est_un_etat_final_de_l_automate( automate, get_element( it ))))
+			break;
+	}
+	return reconnu;
 }
