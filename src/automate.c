@@ -132,7 +132,7 @@ void ajouter_etat( Automate * automate, int etat ){
 void ajouter_lettre( Automate * automate, char lettre ){
 	ajouter_element(automate->alphabet, lettre);
 }
-
+	
 void ajouter_transition(
 	Automate * automate, int origine, char lettre, int fin
 ){
@@ -162,7 +162,7 @@ void ajouter_etat_final(
 void ajouter_etat_initial(
 	Automate * automate, int etat_initial
 ){
-	ajouter_element(automate->initiaux, etat_final);
+	ajouter_element(automate->initiaux, etat_initial);
 }
 
 const Ensemble * voisins( const Automate* automate, int origine, char lettre ){
@@ -374,8 +374,18 @@ Automate *automate_accessible( const Automate * automate){
 	A_FAIRE_RETURN(NULL);
 }
 
+void reverse_transition(int origine, char lettre, int fin, void* data)
+{
+	ajouter_transition(data, fin, lettre, origine);
+}
+
 Automate *miroir( const Automate * automate){
-	A_FAIRE_RETURN(NULL);
+	Automate* clone = creer_automate();
+	ajouter_elements(clone->initiaux, automate->finaux);
+	ajouter_elements(clone->initiaux, automate->initiaux);
+
+	pour_toute_transition(automate, reverse_transition, clone);
+	return clone;
 }
 
 Automate *automate_co_accessible( const Automate * automate){
@@ -436,7 +446,7 @@ int est_un_etat_final_de_l_automate( const Automate* automate, int etat ){
 }
 
 int est_une_lettre_de_l_automate( const Automate* automate, char lettre ){
-	return est_dans_l_ensemble(get_alphabet(automate), etat);
+	return est_dans_l_ensemble(get_alphabet(automate), lettre);
 }
 
 void print_ensemble_2( const intptr_t ens ){
