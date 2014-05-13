@@ -80,6 +80,7 @@ int main(){
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot5);
 	
+	print_automate(automate);
 	print_separation_tests();
 
 	Automate* automate2 = creer_automate();
@@ -119,8 +120,28 @@ int main(){
 	print_separation_tests();
 
 	// Test mot_automate
+	printf("\nAutomate du mot abcde\n");
 	Automate* mot_automate = mot_to_automate("abcde");
 	print_automate(mot_automate);
+	print_separation_tests();
+	
+	// Test creer_automate_du_melange
+	printf("\nAutomate du mélange de l'automate qui reconnait aa, et de l'automate qui reconnait bb\n");
+	Automate* aaa = creer_automate();
+	ajouter_etat_initial(aaa, 0);
+	ajouter_transition(aaa, 0, 'a', 1);
+	ajouter_transition(aaa, 1, 'a', 2);
+	ajouter_etat_final(aaa, 2);
+	
+	Automate* bbb = creer_automate();
+	ajouter_etat_initial(bbb, 0);
+	ajouter_transition(bbb, 0, 'b', 1);
+	ajouter_transition(bbb, 1, 'b', 2);
+	ajouter_etat_final(bbb, 2);
+	
+	
+	Automate* melange = creer_automate_du_melange(aaa, bbb);
+	print_automate(melange);
 
 	liberer_automate(automate);
 	liberer_automate(automate2);
@@ -130,6 +151,9 @@ int main(){
 	liberer_automate(facteur);
 	liberer_automate(surmot);
 	liberer_automate(sousmot);
+	liberer_automate(aaa);
+	liberer_automate(bbb);
+	liberer_automate(melange);
 	
 	exit(1);
 }
