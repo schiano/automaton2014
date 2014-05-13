@@ -558,10 +558,53 @@ Automate * creer_automate_des_facteurs( const Automate* automate ){
 	return facteur;
 }
 
+// abac est un sur-mot de aa
 Automate * creer_automate_des_sur_mot(
 	const Automate* automate, Ensemble * alphabet
 ){
-	A_FAIRE_RETURN(NULL);
+	Automate* surmots = creer_automate();
+	Ensemble_iterateur it_al;
+	Table_iterateur it_trans;
+	int etat_act = get_max_etat(automate) + 1;
+	int etat_init = get_min_etat(automate) - 1;
+
+	liberer_ensemble(surmots->alphabet);
+	surmots->alphabet = (alphabet != NULL)? creer_union_ensemble(automate->alphabet, alphabet):copier_ensemble(automate->alphabet);
+	
+	// Pour chaques transition, on ajoute un état intermédiaire qui boucle sur lui même avec tout l'alphabet. En epsilon transition il passe à l'état suivant.
+	for (it_trans = premier_iterateur_table(automate->transitions); !iterateur_est_vide(it_trans); it_trans = iterateur_suivant_table(it_trans)) {
+		
+		Cle * cle = (Cle*) get_cle(it_trans);
+		Ensemble * fins = (Ensemble*) get_valeur(it_trans);
+		
+		ajouter_transition(surmots, cle->origine, cle->lettre, etat_act);
+		
+		for (it_al = premier_iterateur_ensemble(surmots->alphabet); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+			ajouter_transition(surmots, etat_act, get_element(it_al), etat_act);
+		
+		for (it_al = premier_iterateur_ensemble(fins); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+			ajouter_epsilon_transition(surmots, etat_act, get_element(it_al));
+		
+		etat_act++;
+	}
+	
+	// On ajoute un état initial, et un état final qui bouclent sur eux-même avec l'alphabet.
+	ajouter_etat_final(surmots, etat_act);
+	ajouter_etat_initial(surmots, etat_init);
+	
+	for (it_al = premier_iterateur_ensemble(surmots->alphabet); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al)) {
+		
+		ajouter_transition(surmots, etat_act, get_element(it_al), etat_act);
+		ajouter_transition(surmots, etat_init, get_element(it_al), etat_init);
+	}
+	
+	// Les anciens états initiaux/finaux viennent/vont sur les nouvaux.
+	for (it_al = premier_iterateur_ensemble(automate->initiaux); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+		ajouter_epsilon_transition(surmots, etat_init, get_element(it_al));
+	for (it_al = premier_iterateur_ensemble(automate->finaux); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+		ajouter_epsilon_transition(surmots, get_element(it_al), etat_act);;
+
+	return surmots;
 }
 
 Automate * creer_automate_de_concatenation(
@@ -570,8 +613,33 @@ Automate * creer_automate_de_concatenation(
 	A_FAIRE_RETURN(NULL);
 }
 
+// aa est un sous-mot de abac
+// Donc si abac est reconnu par automate on doit pouvoir reconnaitre a, b, c, ab, aa, ac, ba, bc, aba, abc, aac, bac, abac
+// Autrement dit, on doit pouvoir aller depuis un état à n'importe quel autre état en _avant_, tout en pouvant commencer partout.
+// C'est donc l'automate des facteurs avec des epsilons transition en plus.
 Automate * creer_automate_des_sous_mots( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	Automate * sous_mots = copier_automate(automate);
+	Ensemble * finaux = sous_mots->finaux;
+	Ensemble_iterateur it1, it2;
+	int etat_actuel, etat_cible;
+	
+	for (it1 = premier_iterateur_ensemble(get_etats(sous_mots)); ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1)){
+			
+		etat_actuel = get_element(it1);
+		for (it2 = premier_iterateur_ensemble(etats_accessibles(sous_mots, etat_actuel)); !iterateur_ensemble_est_vide(it2); it2 = iterateur_suivant_ensemble(it2)){
+		
+			etat_cible = get_element(it2);
+			ajouter_epsilon_transition(sous_mots, etat_actuel, etat_cible); 
+			
+			if (est_dans_l_ensemble(finaux, etat_cible)) {
+
+				ajouter_etat_initial(sous_mots, etat_actuel);
+				ajouter_etat_final(sous_mots, etat_actuel);
+			}
+		}
+	}
+	
+	return sous_mots;
 }
 
 Automate * creer_automate_du_melange(
@@ -632,19 +700,13 @@ void print_automate( const Automate * automate ){
 
 int le_mot_est_reconnu( const Automate* automate, const char* mot ){
 	Ensemble * fins = copier_ensemble(get_initiaux(automate));
-	int i;
-	//printf("\n\n[Mot est reconnu]\n");
+	int i;	
 	for(i = 0; i < strlen(mot); i++)
-	{
-		// printf("\n[Pre delta] Appel avec fins = ");
-		// print_ensemble(fins, NULL);
-		// printf(" et mot[i] = '%c'\n", mot[i]);
+	{	
 		fins = delta(automate, fins, mot[i]);		
 	}
 
 	Ensemble_iterateur it1;
-	// printf("\nPrint ensemble fin\n");
-	// print_ensemble(fins, NULL);
 	for(
 		it1 = premier_iterateur_ensemble(fins);
 		! iterateur_ensemble_est_vide( it1 );

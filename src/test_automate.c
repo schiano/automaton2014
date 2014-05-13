@@ -105,6 +105,28 @@ int main(){
 	
 	liberer_automate(automate2);
 
+	Automate* suffixes = creer_automate_des_prefixes(automate2);
+	printf("\n\n\nAutomate des prefixes de Automate2\n");
+	print_automate(suffixes);
+
+	Automate* facteur = creer_automate_des_facteurs(automate2);
+	printf("\n\n\nAutomate des facteurs de Automate2\n");
+	print_automate(facteur);
+	
+	Automate* surmot = creer_automate_des_sur_mot(automate2, NULL);
+	printf("\n\n\nAutomate des sur mots de Automate2\n");
+	print_automate(surmot);
+	
+	Automate* sousmot = creer_automate_des_sous_mots(automate2);
+	printf("\n\n\nAutomate des sous mots de Automate2\n");
+	print_automate(sousmot);
+
+	liberer_automate(suffixes);
+	liberer_automate(prefix);
+	liberer_automate(facteur);
+	liberer_automate(surmot);
+	liberer_automate(sousmot);
+	
 	print_separation_tests();
 	
 	// Test mot_automate
