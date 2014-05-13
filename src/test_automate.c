@@ -32,7 +32,6 @@ void print_separation_tests()
 }
 
 int main(){
-	
 	Automate* automate = creer_automate();
 
 	// Les états seront ajoutés automatiquement
@@ -47,7 +46,7 @@ int main(){
 	ajouter_transition(automate, 3, 'b', 3);
 	ajouter_transition(automate, 4, 'b', 3);
 	ajouter_etat_final(automate, 4);
-
+		
 
 	char mot[] = "babbaa";
 	char mot2[] = "aaabb";
@@ -59,30 +58,32 @@ int main(){
 		printf("\n'%s' est reconnu....\n", mot);
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot);
-
+	
 	if (le_mot_est_reconnu(automate, mot2))
 		printf("\n'%s' est reconnu....\n", mot2);
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot2);
-
+	
 	if (le_mot_est_reconnu(automate, mot3))
 		printf("\n'%s' est reconnu....\n", mot3);
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot3);
-
+	
 	if (le_mot_est_reconnu(automate, mot4))
 		printf("\n'%s' est reconnu....\n", mot4);
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot4);
-
+	
 	if (le_mot_est_reconnu(automate, mot5))
 		printf("\n'%s' est reconnu....\n", mot5);
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot5);
-	
+
+	liberer_automate(automate);		
+
 	print_separation_tests();
 
-	Automate* automate2 = creer_automate();
+	Automate * automate2 = creer_automate();
 
 	ajouter_etat_initial(automate2, 1);
 	ajouter_transition(automate2, 1, 'b', 2);
@@ -95,31 +96,17 @@ int main(){
 
 	printf("Automate2\n\n");
 	print_automate(automate2);
+	printf("\n\nEnsemble des états accessibles\n");
+	print_ensemble(etats_accessibles(automate2, 1), NULL);
 	
-	Automate* prefix = creer_automate_des_suffixes(automate2);
-	printf("\n\n\nAutomate des suffixes de Automate2\n");
-	print_automate(prefix);
+	liberer_automate(automate2);
 
-	Automate* suffixes = creer_automate_des_prefixes(automate2);
-	printf("\n\n\nAutomate des prefixes de Automate2\n");
-	print_automate(suffixes);
-
-	Automate* facteur = creer_automate_des_facteurs(automate2);
-	printf("\n\n\nAutomate des facteurs de Automate2\n");
-	print_automate(facteur);
-	print_separation_tests();
-
-
+	
 	// Test mot_automate
 	Automate* mot_automate = mot_to_automate("abcde");
 	print_automate(mot_automate);
 
-	liberer_automate(automate);
-	liberer_automate(automate2);
 	liberer_automate(mot_automate);
-	liberer_automate(suffixes);
-	liberer_automate(prefix);
-	liberer_automate(facteur);
-	
+
 	exit(1);
 }
