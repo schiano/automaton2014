@@ -455,7 +455,29 @@ Automate * creer_automate_des_prefixes( const Automate* automate ){
 }
 
 Automate * creer_automate_des_suffixes( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	Automate * suffixe = copier_automate(automate);
+	Ensemble * finaux = suffixe->finaux;
+	Ensemble_iterateur it1, it2;
+	int etat_actuel, est_ok;
+	
+	est_ok = 0;
+	
+	for (it1 = premier_iterateur_ensemble(get_etats(suffixe)); ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1)){
+			
+		etat_actuel = get_valeur(it1);
+		for (it2 = premier_iterateur_ensemble(finaux); ! (iterateur_ensemble_est_vide(it2) && est_ok); it2 = iterateur_suivant_ensemble(it1)){
+			
+			if (est_dans_l_ensemble(etats_accessibles(suffixe, etat_actuel), get_valeur(it2))) {
+
+				est_ok = 1;
+				ajouter_etat_initial(suffixe, etat_actuel);
+			}
+		}
+		
+		est_ok = 0;
+	}
+	
+	return suffixe;
 }
 
 Automate * creer_automate_des_facteurs( const Automate* automate ){
