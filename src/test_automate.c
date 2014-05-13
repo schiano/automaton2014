@@ -45,8 +45,15 @@ int main(){
 	Ensemble * etats = delta_star(automate, get_initiaux(automate), mot);
 	print_ensemble(etats, NULL);
 
+
 	liberer_automate(automate);
 	xfree(etats);
+
+	// Test mot_automate
+	Automate* mot_automate = mot_to_automate("abcde");
+	print_automate(mot_automate);
+
+	liberer_automate(mot_automate);
 
 	exit(1);
 }

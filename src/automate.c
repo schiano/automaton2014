@@ -386,10 +386,12 @@ int get_min_etat( const Automate* automate ){
 Automate * mot_to_automate( const char * mot ){
 	Automate* res = creer_automate();
 	int length = sizeof(mot) / sizeof(char);
-	for (int i = 0; i < length; ++i)
+	int i;
+	for (i = 0; i < length; ++i)
 	{
 		ajouter_transition(res, i+1, mot[i], i+2);
 	}
+	return res;
 }
 
 
