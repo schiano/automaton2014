@@ -234,12 +234,14 @@ void ajouter_etat_final(
 	Automate * automate, int etat_final
 ){
 	ajouter_element(automate->finaux, etat_final);
+	ajouter_etat(automate, etat_final);
 }
 
 void ajouter_etat_initial(
 	Automate * automate, int etat_initial
 ){
 	ajouter_element(automate->initiaux, etat_initial);
+	ajouter_etat(automate, etat_initial);
 }
 
 const Ensemble * voisins( const Automate* automate, int origine, char lettre ){
