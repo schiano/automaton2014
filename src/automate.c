@@ -125,6 +125,11 @@ const Ensemble * get_alphabet( const Automate* automate ){
 	return automate->alphabet;
 }
 
+const Table* get_transitions(const Automate* automate)
+{
+	return automate->transitions;
+}
+
 void ajouter_etat( Automate * automate, int etat ){
 	ajouter_element( automate->etats, etat );
 }
@@ -380,11 +385,39 @@ Automate * creer_automate_des_sur_mots(
 	A_FAIRE_RETURN(NULL);
 }
 
-
 Ensemble* etats_accessibles( const Automate * automate, int etat ){
-	Ensemble * etats_courants = creer_ensemble(NULL, NULL, NULL);
-	ajouter_element(etats_courants, etat);
-	return delta_star(automate)
+	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
+	Ensemble * etape = creer_ensemble(NULL, NULL, NULL);	
+	ajouter_element(etape, etat);
+	Ensemble_iterateur it_lettre;
+	Ensemble_iterateur it_etat;
+	
+	// Tant que des états sont à traiter
+	while (taille_ensemble(etape) > 0)
+	{
+		Ensemble * trouves = creer_ensemble(NULL, NULL, NULL);
+		for(
+			it_lettre = premier_iterateur_ensemble( get_alphabet( automate ) );
+		! iterateur_ensemble_est_vide( it_lettre );
+		it_lettre = iterateur_suivant_ensemble( it_lettre )
+		){
+			for(
+				it_etat = premier_iterateur_ensemble(etape);
+			! iterateur_ensemble_est_vide( it_etat );
+			it_etat = iterateur_suivant_ensemble( it_etat )
+			){
+				// on ajoute les voisins aux éléments trouvés
+				ajouter_elements(trouves, voisins(automate, 
+									get_element(it_etat), 
+									get_element(it_lettre)
+									));				
+			}
+		}
+		etape = creer_difference_ensemble(trouves, res);
+		ajouter_elements(res, etape);
+	}	
+
+	return res;
 }
 
 Automate *automate_accessible( const Automate * automate){
