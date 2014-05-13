@@ -508,28 +508,45 @@ Ensemble* etats_accessibles( const Automate * automate, int etat ){
 }
 
 Automate *automate_accessible( const Automate * automate){
-	/*printf("[Automate accessible] Début fonction....\n");
 	Automate* clone = copier_automate(automate);
 	Ensemble* etats = creer_ensemble(NULL, NULL, NULL);
 	Ensemble_iterateur it_etat;
+	Ensemble_iterateur it_lettre;
+
+	// On calcule l'ensemble des états accessibles
 	for(it_etat = premier_iterateur_ensemble(get_initiaux(automate));
 		! iterateur_ensemble_est_vide( it_etat );
 		it_etat = iterateur_suivant_ensemble( it_etat )){
 		ajouter_elements(etats, etats_accessibles(automate, get_element(it_etat)));
 	}
 
+	// On détermine les états qui ne sont pas accessibles => ceux qui sont dans get_etats mais pas dans etats
 	Ensemble* non_accessible = creer_difference_ensemble(get_etats(automate), etats);
-	printf("print ensemble (non_accessible)\n");	
-	print_ensemble(non_accessible, NULL);
-	printf("\n\n");
 
+	// On parcourt l'ensemble obtenu	
 	for(it_etat = premier_iterateur_ensemble(non_accessible);
 		! iterateur_ensemble_est_vide( it_etat );
 		it_etat = iterateur_suivant_ensemble( it_etat )){
-		if (est_une_transition_de_l_automate(automate))
+		// On cherche toutes les transitions partant d'un état
+		for(it_lettre = premier_iterateur_ensemble(get_alphabet(automate));
+			! iterateur_ensemble_est_vide( it_lettre );
+			it_lettre = iterateur_suivant_ensemble( it_lettre )){
+			
+			Cle cle;
+			initialiser_cle( &cle, get_element(it_etat), get_element(it_lettre));				
+			Table_iterateur it = trouver_table( clone->transitions, (intptr_t) &cle );				
+			// Si on trouve une transition partant d'un état non accessible
+			if( !iterateur_est_vide( it ) ){				
+				delete_table( clone->transitions, (intptr_t) &cle); // on la supprime
+			}			
+		}
+		// On supprime l'état des états finaux
+		retirer_element(clone->finaux, get_element(it_etat));
 	}
-	return clone;*/
-	return NULL;
+	// On supprime tous les états non accessibles de l'automate
+	deplacer_ensemble(clone->etats, etats);
+
+	return clone;	
 }
 
 void reverse_transition(int origine, char lettre, int fin, void* automate)
@@ -967,10 +984,10 @@ void print_automate( const Automate * automate ){
 
 int le_mot_est_reconnu( const Automate* automate, const char* mot ){
 	Ensemble * fins = copier_ensemble(get_initiaux(automate));
-	int i;	
+	int i;
 	for(i = 0; i < strlen(mot); i++)
-	{	
-		fins = delta(automate, fins, mot[i]);		
+	{
+		fins = delta(automate, fins, mot[i]);
 	}
 
 	Ensemble_iterateur it1;
@@ -980,8 +997,7 @@ int le_mot_est_reconnu( const Automate* automate, const char* mot ){
 		it1 = iterateur_suivant_ensemble( it1 )
 	){
 		if (est_un_etat_final_de_l_automate(automate, get_element(it1)))
-		return 1;		
+			return 1;
 	}
-
 	return 0;
 }
