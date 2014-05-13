@@ -454,10 +454,12 @@ Automate * mot_to_automate(const char * mot){
 	Automate* res = creer_automate();
 	int length = sizeof(mot) / sizeof(char);
 	int i;
+	ajouter_etat_initial(res, 1);
 	for (i = 0; i < length; ++i)
 	{
 		ajouter_transition(res, i+1, mot[i], i+2);
 	}
+	ajouter_etat_final(res, i+1);
 	return res;
 }
 
@@ -505,7 +507,7 @@ Ensemble* etats_accessibles( const Automate * automate, int etat ){
 }
 
 Automate *automate_accessible( const Automate * automate){
-	printf("[Automate accessible] Début fonction....\n");
+	/*printf("[Automate accessible] Début fonction....\n");
 	Automate* clone = copier_automate(automate);
 	Ensemble* etats = creer_ensemble(NULL, NULL, NULL);
 	Ensemble_iterateur it_etat;
@@ -525,7 +527,8 @@ Automate *automate_accessible( const Automate * automate){
 		it_etat = iterateur_suivant_ensemble( it_etat )){
 		if (est_une_transition_de_l_automate(automate))
 	}
-	return clone;
+	return clone;*/
+	return NULL;
 }
 
 void reverse_transition(int origine, char lettre, int fin, void* automate)
