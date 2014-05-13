@@ -476,6 +476,7 @@ Ensemble* etats_accessibles( const Automate * automate, int etat ){
 	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
 	Ensemble * etape = creer_ensemble(NULL, NULL, NULL);	
 	ajouter_element(etape, etat);
+	ajouter_element(res, etat);
 	Ensemble_iterateur it_lettre;
 	Ensemble_iterateur it_etat;
 
@@ -502,7 +503,7 @@ Ensemble* etats_accessibles( const Automate * automate, int etat ){
 		}
 		etape = creer_difference_ensemble(trouves, res);
 		ajouter_elements(res, etape);
-	}	
+	}
 
 	return res;
 }
@@ -519,6 +520,9 @@ Automate *automate_accessible( const Automate * automate){
 		it_etat = iterateur_suivant_ensemble( it_etat )){
 		ajouter_elements(etats, etats_accessibles(automate, get_element(it_etat)));
 	}
+
+	// etats = creer_union_ensemble(etats, get_initiaux(automate));
+
 
 	// On détermine les états qui ne sont pas accessibles => ceux qui sont dans get_etats mais pas dans etats
 	Ensemble* non_accessible = creer_difference_ensemble(get_etats(automate), etats);
@@ -564,7 +568,7 @@ Automate *miroir( const Automate * automate){
 }
 
 Automate *automate_co_accessible( const Automate * automate){
-	A_FAIRE_RETURN(NULL);
+	return miroir(automate_accessible(miroir(automate)));
 }
 
 Automate * creer_automate_des_prefixes( const Automate* automate ){
