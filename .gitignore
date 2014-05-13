@@ -27,3 +27,5 @@
 *.aux
 *.log
 *.synctex.gz
+doc/html
+doc/latex/

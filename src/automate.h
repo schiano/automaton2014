@@ -18,6 +18,10 @@
  *    along with this Library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * \file automate.h
+ * \brief Toutes les fonctionnalités de Automate
+ */
 
 #ifndef __AUTOMATE_H__
 #define __AUTOMATE_H__
