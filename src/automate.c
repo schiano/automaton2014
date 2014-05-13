@@ -50,6 +50,73 @@ typedef struct _Cle {
 	int lettre;
 } Cle;
 
+
+/******
+ Code Utilitaire
+ ******/
+
+/**
+ * \brief Type regroupant un automate et un entier
+ */
+typedef struct _AutomateInt
+{
+	Automate* automate;
+	int valeur;
+} AutomateInt;
+
+/**
+ * \brief Type regroupant un automate et la lettre et la destination d'une transition
+ */
+typedef struct _AutomateTransition
+{
+	Automate* automate;
+	int lettre;
+	int destination;
+} AutomateTransition;
+
+/**
+ * \brief Créé une structure contenant un automate et un int
+ * L'automate n'est pas créé par cette fonction. L'utilisateur doit le gérer lui-même.
+ * \return La structure
+ */
+AutomateInt* creer_automate_int(){
+	AutomateInt* automate_int = xmalloc(sizeof(AutomateInt));
+	automate_int->automate = NULL;
+	automate_int->valeur = 0;
+	return automate_int;
+}
+
+void liberer_automate_int(AutomateInt* automate_int){
+	xfree(automate_int);
+}
+
+/**
+ * \brief Créé une structure contenant un automate et la lettre et la lettre d'une transition
+ * L'automate n'est pas créé par cette fonction. L'utilisateur doit le gérer lui-même.
+ * \return La structure
+ */
+AutomateTransition* creer_automate_transition(){
+	AutomateTransition* auto_trans = xmalloc(sizeof(AutomateTransition));
+	auto_trans->automate = NULL;
+	auto_trans->lettre = 0;
+	auto_trans->destination = 0;
+	return auto_trans;
+}
+
+void liberer_automate_transition(AutomateTransition* auto_trans){
+	xfree(auto_trans);
+}
+
+void incrementer_etat(const intptr_t element, void* data);
+void incrementer_etats_transition(int origine, char lettre, int fin, void* data);
+void simuler_epsilon_transition(const intptr_t element, void* data);
+void print_ensemble_2( const intptr_t ens );
+
+/******
+ Fin du code Utilitaire
+ ******/
+
+
 int comparer_cle(const Cle *a, const Cle *b) {
 	if( a->origine < b->origine )
 		return -1;
@@ -383,7 +450,7 @@ int get_min_etat( const Automate* automate ){
  * @param  mot
  * @return
  */
-Automate * mot_to_automate( const char * mot ){
+Automate * mot_to_automate(const char * mot){
 	Automate* res = creer_automate();
 	int length = sizeof(mot) / sizeof(char);
 	int i;
@@ -546,8 +613,102 @@ Automate * creer_automate_des_sur_mot(
 
 Automate * creer_automate_de_concatenation(
 	const Automate* automate1, const Automate* automate2
-){
-	A_FAIRE_RETURN(NULL);
+	){
+	/**
+	 * \par Implémentation
+	 * 
+	 * On créé un automate, copie de automate1 avec comme états finaux ceux de automate2
+	 */
+	 Automate* concat = copier_automate(automate1);
+	 deplacer_ensemble(concat->finaux, automate2->finaux);
+
+
+	/**
+	 * Puis on créé un modificateur qui nous permet de passer en paramètres de fonction
+	 * l'automate de destination et une valeur de décalage des états.
+	 * Cette valeur permet de ne pas avoir deux états avec la même valeur.
+	 */
+	 int decalage = get_max_etat(automate1);
+	 AutomateInt* modificateur = creer_automate_int();
+	 modificateur->automate = concat;
+	 modificateur->valeur = decalage;
+
+	/**
+	 * On ajoute les transitions de l'automate 2 avec les états décalés.
+	 */
+	 pour_toute_transition(automate2, incrementer_etats_transition, modificateur);
+	 liberer_automate_int(modificateur);
+
+	/**
+	 * Pour chaque état initial du second automate
+	 */
+	 Ensemble_iterateur initial2;
+	 for(
+	 	initial2 = premier_iterateur_ensemble(get_initiaux(automate2));
+	 	! iterateur_ensemble_est_vide( initial2 );
+	 	initial2 = iterateur_suivant_ensemble( initial2 )){
+		/**
+		 * Pour chaque lettre de son alphabet
+		 */
+		 Ensemble_iterateur lettre;
+		 for(
+		 	lettre = premier_iterateur_ensemble(get_alphabet(automate2));
+		 	! iterateur_ensemble_est_vide(lettre);
+		 	lettre = iterateur_suivant_ensemble(lettre)){
+
+		 	Cle cle;
+		 	printf("initial2 : %d\n", (int) get_element(initial2));
+		 	printf("lettre : %c\n", (char) get_element(lettre));
+		 	initialiser_cle(&cle, (int) get_element(initial2), (char) get_element(lettre));
+		 	Table_iterateur destination = trouver_table(automate2->transitions, (intptr_t) &cle);
+		 	printf("avant clé\n");
+		 	print_cle(&cle);
+		 	printf("après clé\n");
+		 	if (!iterateur_est_vide(destination)){
+		 		AutomateTransition* modif_trans = creer_automate_transition();
+		 		modif_trans->automate = concat;
+		 		modif_trans->lettre = get_element(lettre);
+
+		 		Ensemble* destinations = (Ensemble*) get_valeur(destination);
+		 		Ensemble_iterateur etat_dest;
+				/**
+				 * Pour chaque transition de la forme (i2, a2, q2), avec i2 intial, a2 lettre de l'alphabet
+				 * et q2 état de l'automate2
+				 */
+				for(
+				 	etat_dest = premier_iterateur_ensemble(destinations);
+				 	! iterateur_ensemble_est_vide(etat_dest);
+				 	etat_dest = iterateur_suivant_ensemble(etat_dest)){
+				 	modif_trans->destination = get_element(etat_dest)+decalage;
+					/**
+					 * On ajoute une transition dans l'automate de concaténation ayant pour origine
+					 * un état initial, la lettre a2 et l'état q2
+					 */
+					 pour_tout_element(get_finaux(automate1), simuler_epsilon_transition, modif_trans);
+				}
+				initialiser_cle(&cle, (int) get_element(initial2) + decalage, get_element(lettre));
+		 		delete_table(concat->transitions, (intptr_t) &cle);
+		 		liberer_automate_transition(modif_trans);
+			}
+		}
+	 }
+
+	return concat;
+}
+
+void incrementer_etat(const intptr_t element, void* data){
+	AutomateInt* donnee = (AutomateInt*) data;
+	ajouter_etat(donnee->automate, element + donnee->valeur);
+}
+
+void incrementer_etats_transition(int origine, char lettre, int fin, void* data){
+	AutomateInt* donnee = (AutomateInt*) data;
+	ajouter_transition(donnee->automate, origine + donnee->valeur, lettre, fin + donnee->valeur);
+}
+
+void simuler_epsilon_transition(const intptr_t element, void* data){
+	AutomateTransition* donnee = (AutomateTransition*) data;
+	ajouter_transition(donnee->automate, element, donnee->lettre, donnee->destination);
 }
 
 Automate * creer_automate_des_sous_mots( const Automate* automate ){

@@ -108,5 +108,39 @@ int main(){
 
 	liberer_automate(mot_automate);
 
+	// Test creer_automate_de_concatenation
+	print_separation_tests();
+	Automate* concatenable1 = creer_automate();
+	Automate* concatenable2 = creer_automate();
+
+	printf("Automate à concaténer 2 fois :\n");
+
+	ajouter_etat_initial(concatenable1, 1);
+	ajouter_etat_initial(concatenable1, 2);
+	ajouter_transition(concatenable1, 1, 'a', 3);
+	ajouter_transition(concatenable1, 2, 'b', 3);
+	ajouter_transition(concatenable1, 2, 'c', 4);
+	ajouter_transition(concatenable1, 3, 'd', 5);
+	ajouter_transition(concatenable1, 4, 'e', 6);
+	ajouter_etat_final(concatenable1, 5);
+	ajouter_etat_final(concatenable1, 6);
+
+	print_automate(concatenable1);
+
+	ajouter_etat_initial(concatenable2, 1);
+	ajouter_etat_initial(concatenable2, 2);
+	ajouter_transition(concatenable2, 1, 'a', 3);
+	ajouter_transition(concatenable2, 2, 'b', 3);
+	ajouter_transition(concatenable2, 2, 'c', 4);
+	ajouter_transition(concatenable2, 3, 'd', 5);
+	ajouter_transition(concatenable2, 4, 'e', 6);
+	ajouter_etat_final(concatenable2, 5);
+	ajouter_etat_final(concatenable2, 6);
+
+	Automate* concatenation = creer_automate_de_concatenation(concatenable1, concatenable2);
+
+	printf("Automate concaténé\n");
+	print_automate(concatenation);
+
 	exit(1);
 }
