@@ -130,11 +130,6 @@ const Ensemble * get_alphabet( const Automate* automate ){
 	return automate->alphabet;
 }
 
-const Table* get_transitions(const Automate* automate)
-{
-	return automate->transitions;
-}
-
 void ajouter_etat( Automate * automate, int etat ){
 	ajouter_element( automate->etats, etat );
 }
@@ -230,7 +225,6 @@ Ensemble * delta_star(
 		fins = delta(automate, fins, mot[i]);
 		ajouter_elements(res, fins);
 	}
-	liberer_ensemble(fins);
 
 	return res;
 }
@@ -407,13 +401,14 @@ Automate * creer_automate_des_sur_mots(
 	A_FAIRE_RETURN(NULL);
 }
 
+
 Ensemble* etats_accessibles( const Automate * automate, int etat ){
 	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
 	Ensemble * etape = creer_ensemble(NULL, NULL, NULL);	
 	ajouter_element(etape, etat);
 	Ensemble_iterateur it_lettre;
 	Ensemble_iterateur it_etat;
-	
+
 	// Tant que des états sont à traiter
 	while (taille_ensemble(etape) > 0)
 	{
@@ -485,15 +480,82 @@ Automate *automate_co_accessible( const Automate * automate){
 }
 
 Automate * creer_automate_des_prefixes( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	Automate * prefixe = copier_automate(automate);
+	Ensemble * finaux = prefixe->finaux;
+	Ensemble_iterateur it1, it2;
+	int etat_actuel, est_ok;
+	
+	est_ok = 0;
+	
+	for (it1 = premier_iterateur_ensemble(get_etats(prefixe)); ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1)){
+			
+		etat_actuel = get_element(it1);
+		for (it2 = premier_iterateur_ensemble(finaux); !iterateur_ensemble_est_vide(it2) && !est_ok; it2 = iterateur_suivant_ensemble(it2)){
+			
+			if (est_dans_l_ensemble(etats_accessibles(prefixe, etat_actuel), get_element(it2))) {
+
+				est_ok = 1;
+				ajouter_etat_final(prefixe, etat_actuel);
+			}
+		}
+		
+		est_ok = 0;
+	}
+	
+	return prefixe;
 }
 
 Automate * creer_automate_des_suffixes( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	Automate * suffixe = copier_automate(automate);
+	Ensemble * finaux = suffixe->finaux;
+	Ensemble_iterateur it1, it2;
+	int etat_actuel, est_ok;
+	
+	est_ok = 0;
+	
+	for (it1 = premier_iterateur_ensemble(get_etats(suffixe)); ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1)){
+			
+		etat_actuel = get_element(it1);
+		for (it2 = premier_iterateur_ensemble(finaux); !iterateur_ensemble_est_vide(it2) && !est_ok; it2 = iterateur_suivant_ensemble(it2)){
+			
+			if (est_dans_l_ensemble(etats_accessibles(suffixe, etat_actuel), get_element(it2))) {
+
+				est_ok = 1;
+				ajouter_etat_initial(suffixe, etat_actuel);
+			}
+		}
+		
+		est_ok = 0;
+	}
+	
+	return suffixe;
 }
 
 Automate * creer_automate_des_facteurs( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	Automate * facteur = copier_automate(automate);
+	Ensemble * finaux = facteur->finaux;
+	Ensemble_iterateur it1, it2;
+	int etat_actuel, est_ok;
+	
+	est_ok = 0;
+	
+	for (it1 = premier_iterateur_ensemble(get_etats(facteur)); ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1)){
+			
+		etat_actuel = get_element(it1);
+		for (it2 = premier_iterateur_ensemble(finaux); !iterateur_ensemble_est_vide(it2) && !est_ok; it2 = iterateur_suivant_ensemble(it2)){
+			
+			if (est_dans_l_ensemble(etats_accessibles(facteur, etat_actuel), get_element(it2))) {
+
+				est_ok = 1;
+				ajouter_etat_initial(facteur, etat_actuel);
+				ajouter_etat_final(facteur, etat_actuel);
+			}
+		}
+		
+		est_ok = 0;
+	}
+	
+	return facteur;
 }
 
 Automate * creer_automate_des_sur_mot(
@@ -571,12 +633,18 @@ void print_automate( const Automate * automate ){
 int le_mot_est_reconnu( const Automate* automate, const char* mot ){
 	Ensemble * fins = copier_ensemble(get_initiaux(automate));
 	int i;
+	//printf("\n\n[Mot est reconnu]\n");
 	for(i = 0; i < strlen(mot); i++)
 	{
+		// printf("\n[Pre delta] Appel avec fins = ");
+		// print_ensemble(fins, NULL);
+		// printf(" et mot[i] = '%c'\n", mot[i]);
 		fins = delta(automate, fins, mot[i]);		
 	}
 
 	Ensemble_iterateur it1;
+	// printf("\nPrint ensemble fin\n");
+	// print_ensemble(fins, NULL);
 	for(
 		it1 = premier_iterateur_ensemble(fins);
 		! iterateur_ensemble_est_vide( it1 );
