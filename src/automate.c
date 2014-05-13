@@ -541,7 +541,44 @@ Automate * creer_automate_des_facteurs( const Automate* automate ){
 Automate * creer_automate_des_sur_mot(
 	const Automate* automate, Ensemble * alphabet
 ){
-	A_FAIRE_RETURN(NULL);
+	Automate* surmots = copier_automate(automate);
+	Ensemble_iterateur it;
+	int new_init, new_fin;
+	
+	new_init = get_min_etat(surmots) - 1;
+	ajouter_etat(surmots, new_init);
+	for (it = premier_iterateur_ensemble(surmots->initiaux); !iterateur_ensemble_est_vide(it); it = iterateur_suivant_ensemble(it)) {
+		
+		ajouter_epsilon_transition(surmots, new_init, get_element(it));
+	}
+	
+	new_fin = get_max_etat(surmots) + 1;
+	ajouter_etat(surmots, new_init);
+	for (it = premier_iterateur_ensemble(surmots->finaux); !iterateur_ensemble_est_vide(it); it = iterateur_suivant_ensemble(it)) {
+		
+		ajouter_epsilon_transition(surmots, get_element(it), new_fin);
+	}
+	
+	vider_ensemble(surmots->finaux);
+	vider_ensemble(surmots->initiaux);
+	
+	ajouter_etat_final(surmots, new_fin);
+	ajouter_etat_initial(surmots, new_init);
+	
+	if (alphabet != NULL) {
+		
+		Ensemble* new_alphabet = creer_union_ensemble(surmots->alphabet, alphabet);
+		liberer_ensemble(surmots->alphabet);
+		surmots->alphabet = new_alphabet;
+	}
+	
+	for (it = premier_iterateur_ensemble(surmots->alphabet); !iterateur_ensemble_est_vide(it); it = iterateur_suivant_ensemble(it)) {
+	
+		ajouter_transition(surmots, new_fin, get_element(it), new_fin);
+		ajouter_transition(surmots, new_init, get_element(it), new_init);
+	}
+	
+	return surmots;
 }
 
 Automate * creer_automate_de_concatenation(

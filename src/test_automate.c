@@ -107,8 +107,13 @@ int main(){
 	Automate* facteur = creer_automate_des_facteurs(automate2);
 	printf("\n\n\nAutomate des facteurs de Automate2\n");
 	print_automate(facteur);
-	print_separation_tests();
+	
+	Automate* surmot = creer_automate_des_sur_mot(automate2, NULL);
+	printf("\n\n\nAutomate des sur mots de Automate2\n");
+	print_automate(surmot);
+	
 
+	print_separation_tests();
 
 	// Test mot_automate
 	Automate* mot_automate = mot_to_automate("abcde");
@@ -120,6 +125,7 @@ int main(){
 	liberer_automate(suffixes);
 	liberer_automate(prefix);
 	liberer_automate(facteur);
+	liberer_automate(surmot);
 	
 	exit(1);
 }
