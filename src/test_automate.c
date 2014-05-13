@@ -73,5 +73,12 @@ int main(){
 
 	liberer_automate(automate);	
 
+	
+	// Test mot_automate
+	Automate* mot_automate = mot_to_automate("abcde");
+	print_automate(mot_automate);
+
+	liberer_automate(mot_automate);
+
 	exit(1);
 }

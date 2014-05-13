@@ -18,6 +18,11 @@
  *    along with this Library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * \file automate.c
+ * \brief Détail de l'implémentation de Automate
+ */
+
 #include "automate.h"
 #include "table.h"
 #include "ensemble.h"
@@ -368,8 +373,25 @@ int get_min_etat( const Automate* automate ){
 	return min;
 }
 
+/**
+ * \par Implémentation
+ * La fonction ne fait qu'ajouter des transitions à un automate vide. </br>
+ * \par
+ * Pour chaque lettre du mot, on part de l'état <em>[position de la lettre]+1</em>, on 
+ * passe par la lettre sélectionnée et on fini dans l'état 
+ * <em>[position de la lettre]+2</em>
+ * @param  mot
+ * @return
+ */
 Automate * mot_to_automate( const char * mot ){
-	A_FAIRE_RETURN(NULL);
+	Automate* res = creer_automate();
+	int length = sizeof(mot) / sizeof(char);
+	int i;
+	for (i = 0; i < length; ++i)
+	{
+		ajouter_transition(res, i+1, mot[i], i+2);
+	}
+	return res;
 }
 
 
