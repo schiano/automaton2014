@@ -96,12 +96,17 @@ int main(){
 
 	printf("Automate2\n\n");
 	print_automate(automate2);
-	printf("\n\nEnsemble des états accessibles\n");
-	print_ensemble(etats_accessibles(automate2, 1), NULL);
+	int etat_origin = 1;
+	printf("\n\nEnsemble des états accessibles à partir de l'état %d\n", etat_origin);
+	Ensemble * accessibles = etats_accessibles(automate2, etat_origin);
+	print_ensemble(accessibles, NULL);
+	printf("\n\nEnsemble des états non accessibles à partir de l'état %d\n", etat_origin);
+	print_ensemble(creer_difference_ensemble(get_etats(automate2), accessibles), NULL);
 
 	print_separation_tests();
 
-	automate_accessible(automate2);
+	printf("Automate accessible correspondant à automate2\n\n");
+	print_automate(automate_accessible(automate2));
 	
 	liberer_automate(automate2);
 
