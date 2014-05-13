@@ -459,7 +459,7 @@ Automate * mot_to_automate(const char * mot){
 	{
 		ajouter_transition(res, i+1, mot[i], i+2);
 	}
-	ajouter_etat_final(res, i+2);
+	ajouter_etat_final(res, i+1);
 	return res;
 }
 
