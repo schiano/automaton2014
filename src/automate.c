@@ -220,6 +220,7 @@ Ensemble * delta_star(
 		fins = delta(automate, fins, mot[i]);
 		ajouter_elements(res, fins);
 	}
+	liberer_ensemble(fins);
 
 	return res;
 }
@@ -381,7 +382,9 @@ Automate * creer_automate_des_sur_mots(
 
 
 Ensemble* etats_accessibles( const Automate * automate, int etat ){
-	A_FAIRE_RETURN(NULL);
+	Ensemble * etats_courants = creer_ensemble(NULL, NULL, NULL);
+	ajouter_element(etats_courants, etat);
+	return delta_star(automate)
 }
 
 Automate *automate_accessible( const Automate * automate){
@@ -493,18 +496,12 @@ void print_automate( const Automate * automate ){
 int le_mot_est_reconnu( const Automate* automate, const char* mot ){
 	Ensemble * fins = copier_ensemble(get_initiaux(automate));
 	int i;
-	//printf("\n\n[Mot est reconnu]\n");
 	for(i = 0; i < strlen(mot); i++)
 	{
-		// printf("\n[Pre delta] Appel avec fins = ");
-		// print_ensemble(fins, NULL);
-		// printf(" et mot[i] = '%c'\n", mot[i]);
 		fins = delta(automate, fins, mot[i]);		
 	}
 
 	Ensemble_iterateur it1;
-	// printf("\nPrint ensemble fin\n");
-	// print_ensemble(fins, NULL);
 	for(
 		it1 = premier_iterateur_ensemble(fins);
 		! iterateur_ensemble_est_vide( it1 );
