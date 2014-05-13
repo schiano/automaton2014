@@ -40,15 +40,40 @@ int main(){
 	ajouter_transition(automate, 4, 'b', 3);
 	ajouter_etat_final(automate, 4);	
 
-	char mot[] = "babb";
+	char mot[] = "babbaa";
+	char mot2[] = "aaabb";
+	char mot3[] = "ababa";
+	char mot4[] = "abbaa";
+	char mot5[] = "bbaaa";
 
-	Ensemble * etats = delta_star(automate, get_initiaux(automate), mot);
-	print_ensemble(etats, NULL);
+	if (le_mot_est_reconnu(automate, mot))
+		printf("\n'%s' est reconnu....\n", mot);
+	else
+		printf("\n'%s' n'est pas reconnu....\n", mot);
+	
+	if (le_mot_est_reconnu(automate, mot2))
+		printf("\n'%s' est reconnu....\n", mot2);
+	else
+		printf("\n'%s' n'est pas reconnu....\n", mot2);
+	
+	if (le_mot_est_reconnu(automate, mot3))
+		printf("\n'%s' est reconnu....\n", mot3);
+	else
+		printf("\n'%s' n'est pas reconnu....\n", mot3);
+	
+	if (le_mot_est_reconnu(automate, mot4))
+		printf("\n'%s' est reconnu....\n", mot4);
+	else
+		printf("\n'%s' n'est pas reconnu....\n", mot4);
+	
+	if (le_mot_est_reconnu(automate, mot5))
+		printf("\n'%s' est reconnu....\n", mot5);
+	else
+		printf("\n'%s' n'est pas reconnu....\n", mot5);
 
+	liberer_automate(automate);	
 
-	liberer_automate(automate);
-	xfree(etats);
-
+	
 	// Test mot_automate
 	Automate* mot_automate = mot_to_automate("abcde");
 	print_automate(mot_automate);
