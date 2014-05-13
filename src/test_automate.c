@@ -112,6 +112,9 @@ int main(){
 	printf("\n\n\nAutomate des sur mots de Automate2\n");
 	print_automate(surmot);
 	
+	Automate* sousmot = creer_automate_des_sous_mots(automate2);
+	printf("\n\n\nAutomate des sous mots de Automate2\n");
+	print_automate(sousmot);
 
 	print_separation_tests();
 
@@ -126,6 +129,7 @@ int main(){
 	liberer_automate(prefix);
 	liberer_automate(facteur);
 	liberer_automate(surmot);
+	liberer_automate(sousmot);
 	
 	exit(1);
 }

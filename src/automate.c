@@ -594,8 +594,32 @@ Automate * creer_automate_de_concatenation(
 }
 
 // aa est un sous-mot de abac
+// Donc si abac est reconnu par automate on doit pouvoir reconnaitre a, b, c, ab, aa, ac, ba, bc, aba, abc, aac, bac, abac
+// Autrement dit, on doit pouvoir aller depuis un état à n'importe quel autre état en _avant_, tout en pouvant commencer partout.
+// C'est donc l'automate des facteurs avec des epsilons transition en plus.
 Automate * creer_automate_des_sous_mots( const Automate* automate ){
-	A_FAIRE_RETURN(NULL);
+	Automate * sous_mots = copier_automate(automate);
+	Ensemble * finaux = sous_mots->finaux;
+	Ensemble_iterateur it1, it2;
+	int etat_actuel, etat_cible;
+	
+	for (it1 = premier_iterateur_ensemble(get_etats(sous_mots)); ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1)){
+			
+		etat_actuel = get_element(it1);
+		for (it2 = premier_iterateur_ensemble(etats_accessibles(sous_mots, etat_actuel)); !iterateur_ensemble_est_vide(it2); it2 = iterateur_suivant_ensemble(it2)){
+		
+			etat_cible = get_element(it2);
+			ajouter_epsilon_transition(sous_mots, etat_actuel, etat_cible); 
+			
+			if (est_dans_l_ensemble(finaux, etat_cible)) {
+
+				ajouter_etat_initial(sous_mots, etat_actuel);
+				ajouter_etat_final(sous_mots, etat_actuel);
+			}
+		}
+	}
+	
+	return sous_mots;
 }
 
 Automate * creer_automate_du_melange(
