@@ -538,46 +538,52 @@ Automate * creer_automate_des_facteurs( const Automate* automate ){
 	return facteur;
 }
 
+// abac est un sur-mot de aa
 Automate * creer_automate_des_sur_mot(
 	const Automate* automate, Ensemble * alphabet
 ){
-	Automate* surmots = copier_automate(automate);
-	Ensemble_iterateur it;
-	int new_init, new_fin;
+	Automate* surmots = creer_automate();
+	Ensemble_iterateur it_al;
+	Table_iterateur it_trans;
+	int etat_act = get_max_etat(automate) + 1;
+	int etat_init = get_min_etat(automate) - 1;
+
+	liberer_ensemble(surmots->alphabet);
+	surmots->alphabet = (alphabet != NULL)? creer_union_ensemble(automate->alphabet, alphabet):copier_ensemble(automate->alphabet);
 	
-	new_init = get_min_etat(surmots) - 1;
-	ajouter_etat(surmots, new_init);
-	for (it = premier_iterateur_ensemble(surmots->initiaux); !iterateur_ensemble_est_vide(it); it = iterateur_suivant_ensemble(it)) {
+	// Pour chaques transition, on ajoute un état intermédiaire qui boucle sur lui même avec tout l'alphabet. En epsilon transition il passe à l'état suivant.
+	for (it_trans = premier_iterateur_table(automate->transitions); !iterateur_est_vide(it_trans); it_trans = iterateur_suivant_table(it_trans)) {
 		
-		ajouter_epsilon_transition(surmots, new_init, get_element(it));
-	}
-	
-	new_fin = get_max_etat(surmots) + 1;
-	ajouter_etat(surmots, new_init);
-	for (it = premier_iterateur_ensemble(surmots->finaux); !iterateur_ensemble_est_vide(it); it = iterateur_suivant_ensemble(it)) {
+		Cle * cle = (Cle*) get_cle(it_trans);
+		Ensemble * fins = (Ensemble*) get_valeur(it_trans);
 		
-		ajouter_epsilon_transition(surmots, get_element(it), new_fin);
-	}
-	
-	vider_ensemble(surmots->finaux);
-	vider_ensemble(surmots->initiaux);
-	
-	ajouter_etat_final(surmots, new_fin);
-	ajouter_etat_initial(surmots, new_init);
-	
-	if (alphabet != NULL) {
+		ajouter_transition(surmots, cle->origine, cle->lettre, etat_act);
 		
-		Ensemble* new_alphabet = creer_union_ensemble(surmots->alphabet, alphabet);
-		liberer_ensemble(surmots->alphabet);
-		surmots->alphabet = new_alphabet;
+		for (it_al = premier_iterateur_ensemble(surmots->alphabet); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+			ajouter_transition(surmots, etat_act, get_element(it_al), etat_act);
+		
+		for (it_al = premier_iterateur_ensemble(fins); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+			ajouter_epsilon_transition(surmots, etat_act, get_element(it_al));
+		
+		etat_act++;
 	}
 	
-	for (it = premier_iterateur_ensemble(surmots->alphabet); !iterateur_ensemble_est_vide(it); it = iterateur_suivant_ensemble(it)) {
+	// On ajoute un état initial, et un état final qui bouclent sur eux-même avec l'alphabet.
+	ajouter_etat_final(surmots, etat_act);
+	ajouter_etat_initial(surmots, etat_init);
 	
-		ajouter_transition(surmots, new_fin, get_element(it), new_fin);
-		ajouter_transition(surmots, new_init, get_element(it), new_init);
+	for (it_al = premier_iterateur_ensemble(surmots->alphabet); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al)) {
+		
+		ajouter_transition(surmots, etat_act, get_element(it_al), etat_act);
+		ajouter_transition(surmots, etat_init, get_element(it_al), etat_init);
 	}
 	
+	// Les anciens états initiaux/finaux viennent/vont sur les nouvaux.
+	for (it_al = premier_iterateur_ensemble(automate->initiaux); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+		ajouter_epsilon_transition(surmots, etat_init, get_element(it_al));
+	for (it_al = premier_iterateur_ensemble(automate->finaux); !iterateur_ensemble_est_vide(it_al); it_al = iterateur_suivant_ensemble(it_al))
+		ajouter_epsilon_transition(surmots, get_element(it_al), etat_act);;
+
 	return surmots;
 }
 
@@ -587,6 +593,7 @@ Automate * creer_automate_de_concatenation(
 	A_FAIRE_RETURN(NULL);
 }
 
+// aa est un sous-mot de abac
 Automate * creer_automate_des_sous_mots( const Automate* automate ){
 	A_FAIRE_RETURN(NULL);
 }
