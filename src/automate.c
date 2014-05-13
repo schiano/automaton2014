@@ -642,10 +642,112 @@ Automate * creer_automate_des_sous_mots( const Automate* automate ){
 	return sous_mots;
 }
 
+int comparer_int(const int a, const int b) {
+	if (a>b) return 1;
+	if (a<b) return -1;
+	return 0;
+}
+int copier_int(const int a) {
+	return a;
+}
+void supprimer_int(const int a) {
+	return;
+}
+// À chaque itération de l'algo, on prend une lettre du premier ou du second automate, jusqu'à ce qu'on arrive à la dernière lettre.
+// Produit cartésien des états.
+// Exemple : mot 1 : aaaa, mot 2 : bbbb
+// Quelques résulats possibles : aabbaabb; aaaabbbb: bbbbaaaa; aaababbb: baababba
 Automate * creer_automate_du_melange(
 	const Automate* automate1,  const Automate* automate2
 ){
-	A_FAIRE_RETURN(NULL);
+	int i, j, k, nbelau1, nbelau2, etat_act, et1, et2;
+	int ** nouveaux_etats = NULL;
+	Automate * melange = creer_automate();
+	Ensemble_iterateur it1, it2;
+	Table_iterateur it_transition;
+	Table *cle1 = creer_table(
+		( int(*)(const intptr_t, const intptr_t) ) comparer_int , 
+		( intptr_t (*)( const intptr_t ) ) copier_int,
+		( void(*)(intptr_t) ) supprimer_int
+	);
+	Table *cle2 = creer_table(
+		( int(*)(const intptr_t, const intptr_t) ) comparer_int , 
+		( intptr_t (*)( const intptr_t ) ) copier_int,
+		( void(*)(intptr_t) ) supprimer_int
+	);
+	const Ensemble * finaux1 = get_finaux(automate1); const Ensemble * finaux2 = get_finaux(automate2);
+	const Ensemble * initiaux1 = get_initiaux(automate1); const Ensemble * initiaux2 = get_initiaux(automate2);
+	
+	nbelau1 = taille_ensemble(automate1->etats);
+	nbelau2 = taille_ensemble(automate2->etats);
+	nouveaux_etats = malloc(nbelau1 * sizeof(int *));
+	for(i=0; i<nbelau1; i++)
+		nouveaux_etats[i]=malloc(nbelau2 * sizeof(int));
+	k = 0;
+	
+	// Création des états, états initiaux, états finaux de l'automate.
+	for (it1 = premier_iterateur_ensemble(automate1->etats), i=0; ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1), i++){
+		
+		et1 = get_element(it1);
+		add_table(cle1, et1, i);
+		for (it2 = premier_iterateur_ensemble(automate2->etats), j=0; ! iterateur_ensemble_est_vide(it2); it2 = iterateur_suivant_ensemble(it2), j++){
+			
+			et2 = get_element(it2);
+			ajouter_etat(melange, k);
+			add_table(cle2, et2, j);
+			if (est_dans_l_ensemble(finaux1, et1) && est_dans_l_ensemble(finaux2, et2))
+				ajouter_etat_final(melange, k);
+			if (est_dans_l_ensemble(initiaux1, et1) && est_dans_l_ensemble(initiaux2, et2))
+				ajouter_etat_initial(melange, k);
+			
+			
+			nouveaux_etats[i][j] = k;
+			k++;
+		}
+	}
+	
+	// Les transitions sont ensuite crées
+	// D'abord celles de l'ancien automate 1
+	for (it_transition = premier_iterateur_table(automate1->transitions); !iterateur_est_vide(it_transition); it_transition = iterateur_suivant_table(it_transition)) {
+		
+		Cle * cle = (Cle*) get_cle(it_transition);
+		Ensemble * fins = (Ensemble*) get_valeur(it_transition);
+
+		for (it1 = premier_iterateur_ensemble(fins), i=0; ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1), i++){
+			
+			etat_act = get_element(it1);
+			for(i = 0; i < nbelau2; i++) {
+
+				ajouter_transition(melange,
+					nouveaux_etats[(int)get_valeur(trouver_table(cle1, cle->origine))][i],
+					cle->lettre,
+					nouveaux_etats[(int)get_valeur(trouver_table(cle1, etat_act))][i]);
+			}
+		}
+	}
+	
+	// Puis celles de l'ancien automate 2
+	for (it_transition = premier_iterateur_table(automate2->transitions); !iterateur_est_vide(it_transition); it_transition = iterateur_suivant_table(it_transition)) {
+		
+		Cle * cle = (Cle*) get_cle(it_transition);
+		Ensemble * fins = (Ensemble*) get_valeur(it_transition);
+
+		for (it1 = premier_iterateur_ensemble(fins), i=0; ! iterateur_ensemble_est_vide(it1); it1 = iterateur_suivant_ensemble(it1), i++){
+			
+			etat_act = get_element(it1);
+			for(i = 0; i < nbelau1; i++) {
+
+				ajouter_transition(melange,
+					nouveaux_etats[i][(int)get_valeur(trouver_table(cle2, cle->origine))],
+					cle->lettre,
+					nouveaux_etats[i][(int)get_valeur(trouver_table(cle2, etat_act))]);
+			}
+		}
+	}
+	
+	liberer_table(cle1);
+	liberer_table(cle2);
+	return melange;
 }
 
 int est_une_transition_de_l_automate(
