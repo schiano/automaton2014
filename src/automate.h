@@ -81,6 +81,19 @@ void ajouter_transition(
 	Automate * automate, int origine, char lettre, int fin
 );
 
+
+/**
+ * \brief Ajoute une epsilon transition à l'automate passé en paramètre.
+ *
+ *  Alias pour centraliser la définition de la lettre codant Epsilon
+ *  Appelle ajouter_transition
+ *
+ * \param automate Un automate
+ * \param origine L'origine de la transition
+ * \param La fin de la transition
+ */ 
+void ajouter_epsilon_transition(Automate * automate, int origine, int fin);
+
 /**
  * \brief Ajoute un état final à un automate passé en paramètre.
  *

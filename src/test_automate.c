@@ -18,10 +18,35 @@
  *    along with this Library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "automate.h"
 #include "outils.h"
 
 int main(){
-	A_FAIRE_RETURN(0);
+	Automate* automate = creer_automate();
+
+	// Les états seront ajoutés automatiquement
+
+	ajouter_etat_initial(automate, 1);
+	ajouter_transition(automate, 1, 'b', 2);
+	ajouter_transition(automate, 1, 'a', 3);
+	ajouter_transition(automate, 1, 'a', 2);
+	ajouter_transition(automate, 4, 'b', 1);	
+	ajouter_transition(automate, 2, 'a', 4);
+	ajouter_transition(automate, 3, 'a', 2);
+	ajouter_transition(automate, 3, 'b', 3);
+	ajouter_transition(automate, 4, 'b', 3);
+	ajouter_etat_final(automate, 4);	
+
+	char mot[] = "babb";
+
+	Ensemble * etats = delta_star(automate, get_initiaux(automate), mot);
+	print_ensemble(etats, NULL);
+
+	liberer_automate(automate);
+	xfree(etats);
+
+	exit(1);
 }
