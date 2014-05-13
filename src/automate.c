@@ -513,5 +513,28 @@ void print_automate( const Automate * automate ){
 }
 
 int le_mot_est_reconnu( const Automate* automate, const char* mot ){
-	A_FAIRE_RETURN(0);
+	Ensemble * fins = copier_ensemble(get_initiaux(automate));
+	int i;
+	//printf("\n\n[Mot est reconnu]\n");
+	for(i = 0; i < strlen(mot); i++)
+	{
+		// printf("\n[Pre delta] Appel avec fins = ");
+		// print_ensemble(fins, NULL);
+		// printf(" et mot[i] = '%c'\n", mot[i]);
+		fins = delta(automate, fins, mot[i]);		
+	}
+
+	Ensemble_iterateur it1;
+	// printf("\nPrint ensemble fin\n");
+	// print_ensemble(fins, NULL);
+	for(
+		it1 = premier_iterateur_ensemble(fins);
+		! iterateur_ensemble_est_vide( it1 );
+		it1 = iterateur_suivant_ensemble( it1 )
+	){
+		if (est_un_etat_final_de_l_automate(automate, get_element(it1)))
+		return 1;		
+	}
+
+	return 0;
 }
