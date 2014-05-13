@@ -24,6 +24,13 @@
 #include "automate.h"
 #include "outils.h"
 
+void print_separation_tests()
+{
+	printf("\n\n===========================================================================================\n");
+	printf("===========================================================================================\n");
+	printf("===========================================================================================\n\n");
+}
+
 int main(){
 	Automate* automate = creer_automate();
 
@@ -38,7 +45,8 @@ int main(){
 	ajouter_transition(automate, 3, 'a', 2);
 	ajouter_transition(automate, 3, 'b', 3);
 	ajouter_transition(automate, 4, 'b', 3);
-	ajouter_etat_final(automate, 4);	
+	ajouter_etat_final(automate, 4);
+		
 
 	char mot[] = "babbaa";
 	char mot2[] = "aaabb";
@@ -71,7 +79,27 @@ int main(){
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot5);
 
-	liberer_automate(automate);	
+	liberer_automate(automate);		
+
+	print_separation_tests();
+
+	Automate * automate2 = creer_automate();
+
+	ajouter_etat_initial(automate2, 1);
+	ajouter_transition(automate2, 1, 'b', 2);
+	ajouter_transition(automate2, 1, 'a', 3);
+	ajouter_transition(automate2, 2, 'a', 1);
+	ajouter_transition(automate2, 2, 'c', 3);
+	ajouter_transition(automate2, 4, 'a', 3);
+	ajouter_transition(automate2, 4, 'b', 5);
+	ajouter_etat_final(automate2, 3);
+
+	printf("Automate2\n\n");
+	print_automate(automate2);
+	printf("\n\nEnsemble des états accessibles\n");
+	print_ensemble(etats_accessibles(automate2, 1), NULL);
+	
+	liberer_automate(automate2);
 
 	
 	// Test mot_automate
