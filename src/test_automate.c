@@ -98,9 +98,14 @@ int main(){
 	print_automate(automate2);
 	printf("\n\nEnsemble des états accessibles\n");
 	print_ensemble(etats_accessibles(automate2, 1), NULL);
+
+	print_separation_tests();
+
+	automate_accessible(automate2);
 	
 	liberer_automate(automate2);
 
+	print_separation_tests();
 	
 	// Test mot_automate
 	Automate* mot_automate = mot_to_automate("abcde");

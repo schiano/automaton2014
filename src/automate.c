@@ -443,7 +443,27 @@ Ensemble* etats_accessibles( const Automate * automate, int etat ){
 }
 
 Automate *automate_accessible( const Automate * automate){
-	A_FAIRE_RETURN(NULL);
+	printf("[Automate accessible] Début fonction....\n");
+	Automate* clone = copier_automate(automate);
+	Ensemble* etats = creer_ensemble(NULL, NULL, NULL);
+	Ensemble_iterateur it_etat;
+	for(it_etat = premier_iterateur_ensemble(get_initiaux(automate));
+		! iterateur_ensemble_est_vide( it_etat );
+		it_etat = iterateur_suivant_ensemble( it_etat )){
+		ajouter_elements(etats, etats_accessibles(automate, get_element(it_etat)));
+	}
+
+	Ensemble* non_accessible = creer_difference_ensemble(get_etats(automate), etats);
+	printf("print ensemble (non_accessible)\n");	
+	print_ensemble(non_accessible, NULL);
+	printf("\n\n");
+
+	for(it_etat = premier_iterateur_ensemble(non_accessible);
+		! iterateur_ensemble_est_vide( it_etat );
+		it_etat = iterateur_suivant_ensemble( it_etat )){
+		if (est_une_transition_de_l_automate(automate))
+	}
+	return clone;
 }
 
 void reverse_transition(int origine, char lettre, int fin, void* automate)
