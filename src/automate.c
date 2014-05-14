@@ -108,6 +108,7 @@ void liberer_automate_transition(AutomateTransition* auto_trans){
 }
 
 void incrementer_etat(const intptr_t element, void* data);
+void incrementer_finaux(const intptr_t element, void* data);
 void incrementer_etats_transition(int origine, char lettre, int fin, void* data);
 void simuler_epsilon_transition(const intptr_t element, void* data);
 void print_ensemble_2( const intptr_t ens );
@@ -233,6 +234,7 @@ void ajouter_epsilon_transition(Automate * automate, int origine, int fin)
 void ajouter_etat_final(
 	Automate * automate, int etat_final
 ){
+	ajouter_element(automate->etats, etat_final);
 	ajouter_element(automate->finaux, etat_final);
 	ajouter_etat(automate, etat_final);
 }
@@ -240,6 +242,7 @@ void ajouter_etat_final(
 void ajouter_etat_initial(
 	Automate * automate, int etat_initial
 ){
+	ajouter_element(automate->etats, etat_initial);
 	ajouter_element(automate->initiaux, etat_initial);
 	ajouter_etat(automate, etat_initial);
 }
@@ -283,19 +286,29 @@ Ensemble * delta(
 	return res;
 }
 
+/**
+ * \par Implémentation
+ * La fonction calcule l'ensemble des états atteints en lisant un mot depuis un ensemble d'états. </br>
+ * \par
+ * On itère sur chaque lettre du mot en ajoutant à l'ensemble retourné tous les voisins des états traités avec la lettre
+ * courante (utilise delta).
+ * @param  automate
+ * @param  etats_courants
+ * @param  mot
+ * @return
+ */
+
 Ensemble * delta_star(
 	const Automate* automate, const Ensemble * etats_courants, const char* mot
 ){
-	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
 	Ensemble * fins = copier_ensemble(etats_courants);
 	int i;
 	for(i = 0; i < strlen(mot); i++)
 	{
+		// deplacer_ensemble(fins, delta(automate, fins, mot[i]));
 		fins = delta(automate, fins, mot[i]);
-		ajouter_elements(res, fins);
 	}
-
-	return res;
+	return fins;
 }
 
 void pour_toute_transition(
@@ -454,29 +467,32 @@ int get_min_etat( const Automate* automate ){
  */
 Automate * mot_to_automate(const char * mot){
 	Automate* res = creer_automate();
-	int length = sizeof(mot) / sizeof(char);
+	int length = strlen(mot);
+
 	int i;
 	ajouter_etat_initial(res, 1);
 	for (i = 0; i < length; ++i)
 	{
 		ajouter_transition(res, i+1, mot[i], i+2);
 	}
-	ajouter_etat_final(res, i+1);
+	ajouter_etat_final(res, length+1);
 	return res;
 }
 
-
-Automate * creer_automate_des_sur_mots(
-	const Automate* automate, Ensemble * alphabet
-){
-	A_FAIRE_RETURN(NULL);
-}
-
+/**
+ * \par Implémentation
+ * La fonction calcule l'ensemble des états accessibles à partir d'un état donné </br>
+ * \par
+ * On itère sur les voisins tant qu'il y en a à traiter (permet de traiter les boucles)<br/>
+ * @param  automate
+ * @param  etat
+ * @return
+ */
 
 Ensemble* etats_accessibles( const Automate * automate, int etat ){
 	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
 	Ensemble * etape = creer_ensemble(NULL, NULL, NULL);	
-	ajouter_element(etape, etat);
+	ajouter_element(etape, etat);	
 	Ensemble_iterateur it_lettre;
 	Ensemble_iterateur it_etat;
 
@@ -503,40 +519,100 @@ Ensemble* etats_accessibles( const Automate * automate, int etat ){
 		}
 		etape = creer_difference_ensemble(trouves, res);
 		ajouter_elements(res, etape);
-	}	
+	}
 
 	return res;
 }
 
+/**
+ * \par Implémentation
+ * La fonction construit l'automate ayant seulement les états accessibles depuis les états initiaux de l'automate. </br>
+ * \par
+ * On calcule d'abord l'ensemble des états accessibles pour déterminer les non accessibles. On retire tous les états non
+ * accessibles ainsi que les transitions dont ils sont l'origine
+ * @param  automate
+ * @return
+ */
+
 Automate *automate_accessible( const Automate * automate){
-	/*printf("[Automate accessible] Début fonction....\n");
 	Automate* clone = copier_automate(automate);
 	Ensemble* etats = creer_ensemble(NULL, NULL, NULL);
 	Ensemble_iterateur it_etat;
+	Ensemble_iterateur it_lettre;
+
+	// On calcule l'ensemble des états accessibles
 	for(it_etat = premier_iterateur_ensemble(get_initiaux(automate));
 		! iterateur_ensemble_est_vide( it_etat );
 		it_etat = iterateur_suivant_ensemble( it_etat )){
 		ajouter_elements(etats, etats_accessibles(automate, get_element(it_etat)));
+		ajouter_element(etats, get_element(it_etat));
 	}
 
+	// On détermine les états qui ne sont pas accessibles => ceux qui sont dans get_etats mais pas dans etats
 	Ensemble* non_accessible = creer_difference_ensemble(get_etats(automate), etats);
-	printf("print ensemble (non_accessible)\n");	
-	print_ensemble(non_accessible, NULL);
-	printf("\n\n");
 
+	// On parcourt l'ensemble obtenu	
 	for(it_etat = premier_iterateur_ensemble(non_accessible);
 		! iterateur_ensemble_est_vide( it_etat );
 		it_etat = iterateur_suivant_ensemble( it_etat )){
-		if (est_une_transition_de_l_automate(automate))
+
+		const intptr_t etat_courant = get_element(it_etat);
+
+		// On cherche toutes les transitions partant d'un état
+		for(it_lettre = premier_iterateur_ensemble(get_alphabet(automate));
+			! iterateur_ensemble_est_vide( it_lettre );
+			it_lettre = iterateur_suivant_ensemble( it_lettre )){
+			
+			Cle cle;
+			initialiser_cle( &cle, etat_courant, get_element(it_lettre));				
+			Table_iterateur it = trouver_table( clone->transitions, (intptr_t) &cle );				
+			// Si on trouve une transition partant d'un état non accessible
+			if( !iterateur_est_vide( it ) ){				
+				delete_table( clone->transitions, (intptr_t) &cle); // on la supprime
+			}			
+		}
+		// si c'est un état final, on pense à le supprimer
+		if (est_un_etat_final_de_l_automate(automate, etat_courant))
+		{
+			retirer_element(clone->finaux, etat_courant);			
+		}
+		// si c'est un état initial, on pense à le supprimer
+		if (est_un_etat_initial_de_l_automate(automate, etat_courant))
+		{
+			retirer_element(clone->initiaux, etat_courant);			
+		}
 	}
-	return clone;*/
-	return NULL;
+	// On supprime tous les états non accessibles de l'automate
+	deplacer_ensemble(clone->etats, etats);
+	
+	return clone;
 }
+
+/**
+ * \par Implémentation
+ * La fonction ne fait qu'ajouter des transitions à l'automate passé en paramètre</br>
+ * \par
+ * Inverse l'origine et la fin d'une transition et ajoute la nouvelle transition
+ * @param  origine
+ * @param  lettre
+ * @param  fin
+ * @param  automate
+ * @return
+ */
 
 void reverse_transition(int origine, char lettre, int fin, void* automate)
 {
 	ajouter_transition(automate, fin, lettre, origine);
 }
+
+/**
+ * \par Implémentation
+ * La fonction ne fait qu'inverser les états finaux et initiaux ainsi que le sens des transitions. </br>
+ * \par
+ * Construit un automate en inversant les états finaux et initiaux puis renverse les transitions
+ * @param  automate
+ * @return
+ */
 
 Automate *miroir( const Automate * automate){
 	Automate* clone = creer_automate();
@@ -547,8 +623,18 @@ Automate *miroir( const Automate * automate){
 	return clone;
 }
 
+/**
+ * \par Implémentation
+ * La fonction utilise le miroir de l'automate accessible du miroir de l'automate de départ</br>
+ * \par
+ * S'il existe un chemin entre l'état et un terminal, alors il suffit de prendre le miroir et de calculer
+ * son automate accessible. On refait le miroir après pour obtenir lire l'automate dans le bon sens.
+ * @param  automate
+ * @return
+ */
+
 Automate *automate_co_accessible( const Automate * automate){
-	A_FAIRE_RETURN(NULL);
+	return miroir(automate_accessible(miroir(automate)));
 }
 
 Automate * creer_automate_des_prefixes( const Automate* automate ){
@@ -688,7 +774,8 @@ Automate * creer_automate_de_concatenation(
 	 * On créé un automate, copie de automate1 avec comme états finaux ceux de automate2
 	 */
 	 Automate* concat = copier_automate(automate1);
-	 deplacer_ensemble(concat->finaux, automate2->finaux);
+	 retirer_elements(concat->finaux, automate1->finaux);
+	 // deplacer_ensemble(concat->finaux, copier_ensemble(automate2->finaux));
 
 
 	/**
@@ -705,6 +792,7 @@ Automate * creer_automate_de_concatenation(
 	 * On ajoute les transitions de l'automate 2 avec les états décalés.
 	 */
 	 pour_toute_transition(automate2, incrementer_etats_transition, modificateur);
+	 pour_tout_element(get_finaux(automate2), incrementer_finaux, modificateur);
 	 liberer_automate_int(modificateur);
 
 	/**
@@ -725,13 +813,8 @@ Automate * creer_automate_de_concatenation(
 		 	lettre = iterateur_suivant_ensemble(lettre)){
 
 		 	Cle cle;
-		 	printf("initial2 : %d\n", (int) get_element(initial2));
-		 	printf("lettre : %c\n", (char) get_element(lettre));
 		 	initialiser_cle(&cle, (int) get_element(initial2), (char) get_element(lettre));
 		 	Table_iterateur destination = trouver_table(automate2->transitions, (intptr_t) &cle);
-		 	printf("avant clé\n");
-		 	print_cle(&cle);
-		 	printf("après clé\n");
 		 	if (!iterateur_est_vide(destination)){
 		 		AutomateTransition* modif_trans = creer_automate_transition();
 		 		modif_trans->automate = concat;
@@ -756,6 +839,7 @@ Automate * creer_automate_de_concatenation(
 				}
 				initialiser_cle(&cle, (int) get_element(initial2) + decalage, get_element(lettre));
 		 		delete_table(concat->transitions, (intptr_t) &cle);
+		 		retirer_element(concat->etats, (int) get_element(initial2) + decalage);
 		 		liberer_automate_transition(modif_trans);
 			}
 		}
@@ -767,6 +851,11 @@ Automate * creer_automate_de_concatenation(
 void incrementer_etat(const intptr_t element, void* data){
 	AutomateInt* donnee = (AutomateInt*) data;
 	ajouter_etat(donnee->automate, element + donnee->valeur);
+}
+
+void incrementer_finaux(const intptr_t element, void* data){
+	AutomateInt* donnee = (AutomateInt*) data;
+	ajouter_etat_final(donnee->automate, element + donnee->valeur);
 }
 
 void incrementer_etats_transition(int origine, char lettre, int fin, void* data){
@@ -965,13 +1054,21 @@ void print_automate( const Automate * automate ){
 	);
 	printf("\n");
 }
-
+/**
+ * \par Implémentation
+ * La fonction ne considère que les derniers états atteints avant de tester si au moins un est final</br>
+ * \par
+ * On lit un mot depuis l'ensemble des états initiaux puis réitère à partir des voisins trouvés à l'étape précédente
+ * @param  automate
+ * @param  mot
+ * @return
+ */
 int le_mot_est_reconnu( const Automate* automate, const char* mot ){
 	Ensemble * fins = copier_ensemble(get_initiaux(automate));
-	int i;	
+	int i;
 	for(i = 0; i < strlen(mot); i++)
-	{	
-		fins = delta(automate, fins, mot[i]);		
+	{
+		fins = delta(automate, fins, mot[i]);
 	}
 
 	Ensemble_iterateur it1;
@@ -981,8 +1078,7 @@ int le_mot_est_reconnu( const Automate* automate, const char* mot ){
 		it1 = iterateur_suivant_ensemble( it1 )
 	){
 		if (est_un_etat_final_de_l_automate(automate, get_element(it1)))
-		return 1;		
+			return 1;
 	}
-
 	return 0;
 }

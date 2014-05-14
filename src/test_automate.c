@@ -53,6 +53,8 @@ int main(){
 	char mot4[] = "abbaa";
 	char mot5[] = "bbaaa";
 
+	printf("Automate\n\n");
+
 	print_automate(automate);
 
 	if (le_mot_est_reconnu(automate, mot))
@@ -79,8 +81,7 @@ int main(){
 		printf("\n'%s' est reconnu....\n", mot5);
 	else
 		printf("\n'%s' n'est pas reconnu....\n", mot5);
-
-	print_automate(automate);
+	
 	print_separation_tests();
 
 	Automate * automate2 = creer_automate();
@@ -96,15 +97,34 @@ int main(){
 
 	printf("Automate2\n\n");
 	print_automate(automate2);
-	printf("\n\nEnsemble des états accessibles\n");
-	print_ensemble(etats_accessibles(automate2, 1), NULL);
+	int etat_origin = 1;
+	printf("\n\nEnsemble des états accessibles à partir de l'état %d\n", etat_origin);
+	Ensemble * accessibles = etats_accessibles(automate2, etat_origin);
+	print_ensemble(accessibles, NULL);
+	printf("\n\nEnsemble des états non accessibles à partir de l'état %d\n", etat_origin);
+	print_ensemble(creer_difference_ensemble(get_etats(automate2), accessibles), NULL);
 
 	print_separation_tests();
 
-	automate_accessible(automate2);
-	
-	liberer_automate(automate2);
+	printf("Automate accessible correspondant à automate2\n\n");
+	print_automate(automate_accessible(automate2));
 
+	print_separation_tests();
+
+	printf("Automate miroir correspondant à automate2\n\n");
+	Automate * miroir_automate2 = miroir(automate2);
+	print_automate(miroir_automate2);
+	
+	printf("\n\nEnsemble des états non accessibles à partir de l'état 3 POUR LE MIROIR\n");
+	print_ensemble(creer_difference_ensemble(get_etats(miroir_automate2), etats_accessibles(miroir_automate2, 3)), NULL);
+
+	print_separation_tests();
+
+	printf("Automate co-accessible correspondant à automate2\n\n");
+	print_automate(automate_co_accessible(automate2));
+
+	liberer_automate(automate2);
+	/*
 	Automate* suffixes = creer_automate_des_suffixes(automate2);
 	printf("\n\n\nAutomate des suffixes de Automate2\n");
 	print_automate(suffixes);
@@ -193,6 +213,6 @@ int main(){
 	Automate* concatenation = creer_automate_de_concatenation(concatenable1, concatenable2);
 
 	printf("Automate concaténé\n");
-	print_automate(concatenation);
+	print_automate(concatenation);*/
 	exit(1);
 }
