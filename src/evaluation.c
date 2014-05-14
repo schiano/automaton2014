@@ -593,23 +593,66 @@ int test_mot_to_automate(){
 
 	Automate* automate = mot_to_automate("abbaa");
 
-	TEST(le_mot_est_reconnu(automate, "abbaa"), result);
-	TEST(est_un_etat_de_l_automate(automate, 1), result);
-	TEST(est_un_etat_de_l_automate(automate, 2), result);
-	TEST(est_un_etat_de_l_automate(automate, 3), result);
-	TEST(est_un_etat_de_l_automate(automate, 4), result);
-	TEST(est_un_etat_de_l_automate(automate, 5), result);
-	TEST(est_un_etat_de_l_automate(automate, 6), result);
-	TEST(est_un_etat_initial_de_l_automate(automate, 1), result);
-	TEST(est_un_etat_final_de_l_automate(automate, 6), result);
-	TEST(est_une_transition_de_l_automate(automate, 1, 'a', 2), result);
-	TEST(est_une_transition_de_l_automate(automate, 2, 'b', 3), result);
-	TEST(est_une_transition_de_l_automate(automate, 3, 'b', 4), result);
-	TEST(est_une_transition_de_l_automate(automate, 4, 'a', 5), result);
-	TEST(est_une_transition_de_l_automate(automate, 5, 'a', 6), result);
+	TEST(
+		1
+		&& le_mot_est_reconnu(automate, "abbaa")
+		&& est_un_etat_de_l_automate(automate, 1)
+		&& est_un_etat_de_l_automate(automate, 2)
+		&& est_un_etat_de_l_automate(automate, 3)
+		&& est_un_etat_de_l_automate(automate, 4)
+		&& est_un_etat_de_l_automate(automate, 5)
+		&& est_un_etat_de_l_automate(automate, 6)
+		&& est_un_etat_initial_de_l_automate(automate, 1)
+		&& est_un_etat_final_de_l_automate(automate, 6)
+		&& est_une_transition_de_l_automate(automate, 1, 'a', 2)
+		&& est_une_transition_de_l_automate(automate, 2, 'b', 3)
+		&& est_une_transition_de_l_automate(automate, 3, 'b', 4)
+		&& est_une_transition_de_l_automate(automate, 4, 'a', 5)
+		&& est_une_transition_de_l_automate(automate, 5, 'a', 6)
+		, result);
 
 	liberer_automate(automate);
 
+	return result;
+}
+
+int test_creer_automate_de_concatenation(){
+	BEGIN_TEST;
+	int result = 1;
+
+	Automate* concatenable1 = creer_automate();
+
+	printf("Le même automate est concaténé 2 fois :\n");
+
+	ajouter_etat_initial(concatenable1, 1);
+	ajouter_etat_initial(concatenable1, 2);
+	ajouter_transition(concatenable1, 1, 'a', 3);
+	ajouter_transition(concatenable1, 2, 'b', 3);
+	ajouter_transition(concatenable1, 2, 'c', 4);
+	ajouter_transition(concatenable1, 3, 'd', 5);
+	ajouter_transition(concatenable1, 4, 'e', 6);
+	ajouter_etat_final(concatenable1, 5);
+	ajouter_etat_final(concatenable1, 6);
+
+	Automate* concatenable2 = copier_automate(concatenable1);
+
+	Automate* concatenation = creer_automate_de_concatenation(concatenable1, concatenable2);
+
+	TEST(est_un_etat_initial_de_l_automate(concatenation, 1), result);
+	TEST(est_un_etat_initial_de_l_automate(concatenation, 2), result);
+	// 6 est la valeur max du premier automate, 5 et 6 les finaux du deuxième
+	TEST(est_un_etat_final_de_l_automate(concatenation, 5+6), result);
+	TEST(est_un_etat_final_de_l_automate(concatenation, 6+6), result);
+	// Les états accessibles sont supprimés
+	TEST(! est_un_etat_de_l_automate(concatenation, 1+6), result);
+	TEST(! est_un_etat_de_l_automate(concatenation, 2+6), result);
+	// Les transitions entre les états finaux du premier automate et les voisins des initiaux du deuxième
+	TEST(est_une_transition_de_l_automate(concatenation, 5, 'a', 3+6), result);
+	TEST(est_une_transition_de_l_automate(concatenation, 5, 'b', 3+6), result);
+	TEST(est_une_transition_de_l_automate(concatenation, 5, 'c', 4+6), result);
+	TEST(est_une_transition_de_l_automate(concatenation, 6, 'a', 3+6), result);
+	TEST(est_une_transition_de_l_automate(concatenation, 6, 'b', 3+6), result);
+	TEST(est_une_transition_de_l_automate(concatenation, 6, 'c', 4+6), result);
 	return result;
 }
 
@@ -626,6 +669,7 @@ int main(){
 
 	// Mot to automate
 	ajouter_test( test_mot_to_automate );
+	ajouter_test( test_creer_automate_de_concatenation );
 
 	ajouter_test(test_etats_accessibles);
 	ajouter_test(test_automate_co_accessible);
