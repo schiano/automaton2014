@@ -124,7 +124,7 @@ int main(){
 	print_automate(automate_co_accessible(automate2));
 
 	liberer_automate(automate2);
-
+	/*
 	Automate* suffixes = creer_automate_des_suffixes(automate2);
 	printf("\n\n\nAutomate des suffixes de Automate2\n");
 	print_automate(suffixes);
@@ -213,6 +213,6 @@ int main(){
 	Automate* concatenation = creer_automate_de_concatenation(concatenable1, concatenable2);
 
 	printf("Automate concaténé\n");
-	print_automate(concatenation);
+	print_automate(concatenation);*/
 	exit(1);
 }
