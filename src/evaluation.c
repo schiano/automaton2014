@@ -217,6 +217,71 @@ int test_creer_automate(){
 	return result;
 }
 
+int test_etats_accessibles()
+{
+	BEGIN_TEST;
+
+	int result = 1;
+	Automate* automate = creer_automate();
+	ajouter_etat_initial(automate, 1);
+	ajouter_transition(automate, 1, 'b', 2);
+	ajouter_transition(automate, 1, 'a', 3);
+	ajouter_transition(automate, 2, 'a', 1);
+	ajouter_transition(automate, 2, 'c', 3);
+	ajouter_transition(automate, 4, 'a', 3);
+	ajouter_transition(automate, 4, 'b', 5);
+	ajouter_etat_final(automate, 3);
+
+	Ensemble* ens = etats_accessibles(automate, 1);
+
+	TEST( 
+		1
+		&& ens
+		&& est_dans_l_ensemble( ens, 1)
+		&& est_dans_l_ensemble( ens, 2)
+		&& ! est_dans_l_ensemble( ens, 4)
+		&& ! est_dans_l_ensemble( ens, 5)
+		&& est_dans_l_ensemble( ens, 3)
+		, result
+	);
+
+	liberer_ensemble(ens);
+	liberer_automate(automate);
+	return result;
+}
+
+int test_automate_co_accessible()
+{
+	BEGIN_TEST;
+
+	int result = 1;
+	Automate* automate = creer_automate();
+	ajouter_etat_initial(automate, 1);
+	ajouter_transition(automate, 1, 'b', 2);
+	ajouter_transition(automate, 1, 'a', 3);
+	ajouter_transition(automate, 2, 'a', 1);
+	ajouter_transition(automate, 2, 'c', 3);
+	ajouter_transition(automate, 4, 'a', 3);
+	ajouter_transition(automate, 4, 'b', 5);
+	ajouter_etat_final(automate, 3);
+	Automate* automate_co = automate_co_accessible(automate);
+	const Ensemble* etats = get_etats(automate_co);
+
+	TEST( 
+		1
+		&& etats
+		&& est_dans_l_ensemble( etats, 1)
+		&& est_dans_l_ensemble( etats, 2)
+		&& est_dans_l_ensemble( etats, 3)
+		&& est_dans_l_ensemble( etats, 4)
+		&& !est_dans_l_ensemble( etats, 5)
+		, result
+	);
+
+	liberer_automate(automate);
+	liberer_automate(automate_co);
+	return result;
+}
 
 int test_delta_delta_star(){
 	BEGIN_TEST;
@@ -224,8 +289,7 @@ int test_delta_delta_star(){
 	int result = 1;
 
 	Automate* automate = creer_automate();
-
-
+	
 	ajouter_etat( automate, 3 );
 	ajouter_etat( automate, 5 );
 	ajouter_transition( automate, 3, 'a', 5 );
@@ -562,6 +626,9 @@ int main(){
 
 	// Mot to automate
 	ajouter_test( test_mot_to_automate );
+
+	ajouter_test(test_etats_accessibles);
+	ajouter_test(test_automate_co_accessible);
 
 	set_all_sigactions();
 	
