@@ -108,6 +108,7 @@ void liberer_automate_transition(AutomateTransition* auto_trans){
 }
 
 void incrementer_etat(const intptr_t element, void* data);
+void incrementer_finaux(const intptr_t element, void* data);
 void incrementer_etats_transition(int origine, char lettre, int fin, void* data);
 void simuler_epsilon_transition(const intptr_t element, void* data);
 void print_ensemble_2( const intptr_t ens );
@@ -774,7 +775,8 @@ Automate * creer_automate_de_concatenation(
 	 * On créé un automate, copie de automate1 avec comme états finaux ceux de automate2
 	 */
 	 Automate* concat = copier_automate(automate1);
-	 deplacer_ensemble(concat->finaux, copier_ensemble(automate2->finaux));
+	 retirer_elements(concat->finaux, automate1->finaux);
+	 // deplacer_ensemble(concat->finaux, copier_ensemble(automate2->finaux));
 
 
 	/**
@@ -791,6 +793,7 @@ Automate * creer_automate_de_concatenation(
 	 * On ajoute les transitions de l'automate 2 avec les états décalés.
 	 */
 	 pour_toute_transition(automate2, incrementer_etats_transition, modificateur);
+	 pour_tout_element(get_finaux(automate2), incrementer_finaux, modificateur);
 	 liberer_automate_int(modificateur);
 
 	/**
@@ -811,13 +814,8 @@ Automate * creer_automate_de_concatenation(
 		 	lettre = iterateur_suivant_ensemble(lettre)){
 
 		 	Cle cle;
-		 	printf("initial2 : %d\n", (int) get_element(initial2));
-		 	printf("lettre : %c\n", (char) get_element(lettre));
 		 	initialiser_cle(&cle, (int) get_element(initial2), (char) get_element(lettre));
 		 	Table_iterateur destination = trouver_table(automate2->transitions, (intptr_t) &cle);
-		 	printf("avant clé\n");
-		 	print_cle(&cle);
-		 	printf("après clé\n");
 		 	if (!iterateur_est_vide(destination)){
 		 		AutomateTransition* modif_trans = creer_automate_transition();
 		 		modif_trans->automate = concat;
@@ -842,6 +840,7 @@ Automate * creer_automate_de_concatenation(
 				}
 				initialiser_cle(&cle, (int) get_element(initial2) + decalage, get_element(lettre));
 		 		delete_table(concat->transitions, (intptr_t) &cle);
+		 		retirer_element(concat->etats, (int) get_element(initial2) + decalage);
 		 		liberer_automate_transition(modif_trans);
 			}
 		}
@@ -853,6 +852,11 @@ Automate * creer_automate_de_concatenation(
 void incrementer_etat(const intptr_t element, void* data){
 	AutomateInt* donnee = (AutomateInt*) data;
 	ajouter_etat(donnee->automate, element + donnee->valeur);
+}
+
+void incrementer_finaux(const intptr_t element, void* data){
+	AutomateInt* donnee = (AutomateInt*) data;
+	ajouter_etat_final(donnee->automate, element + donnee->valeur);
 }
 
 void incrementer_etats_transition(int origine, char lettre, int fin, void* data){
