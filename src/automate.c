@@ -302,8 +302,9 @@ Ensemble * delta_star(
 	int i;
 	for(i = 0; i < strlen(mot); i++)
 	{
-		deplacer_ensemble(fins, delta(automate, fins, mot[i]));
-	}	
+		// deplacer_ensemble(fins, delta(automate, fins, mot[i]));
+		fins = delta(automate, fins, mot[i]);
+	}
 	return fins;
 }
 
