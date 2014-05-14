@@ -298,16 +298,13 @@ Ensemble * delta(
 Ensemble * delta_star(
 	const Automate* automate, const Ensemble * etats_courants, const char* mot
 ){
-	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
 	Ensemble * fins = copier_ensemble(etats_courants);
 	int i;
 	for(i = 0; i < strlen(mot); i++)
 	{
-		fins = delta(automate, fins, mot[i]);
-		ajouter_elements(res, fins);
-	}
-
-	return res;
+		deplacer_ensemble(fins, delta(automate, fins, mot[i]));
+	}	
+	return fins;
 }
 
 void pour_toute_transition(
@@ -483,7 +480,6 @@ Automate * mot_to_automate(const char * mot){
  * La fonction calcule l'ensemble des états accessibles à partir d'un état donné </br>
  * \par
  * On itère sur les voisins tant qu'il y en a à traiter (permet de traiter les boucles)<br/>
- * On considère que les états sont accessibles depuis eux mêmes en lisant epsilon.
  * @param  automate
  * @param  etat
  * @return
@@ -492,8 +488,7 @@ Automate * mot_to_automate(const char * mot){
 Ensemble* etats_accessibles( const Automate * automate, int etat ){
 	Ensemble * res = creer_ensemble(NULL, NULL, NULL);
 	Ensemble * etape = creer_ensemble(NULL, NULL, NULL);	
-	ajouter_element(etape, etat);
-	ajouter_element(res, etat);
+	ajouter_element(etape, etat);	
 	Ensemble_iterateur it_lettre;
 	Ensemble_iterateur it_etat;
 
@@ -546,6 +541,7 @@ Automate *automate_accessible( const Automate * automate){
 		! iterateur_ensemble_est_vide( it_etat );
 		it_etat = iterateur_suivant_ensemble( it_etat )){
 		ajouter_elements(etats, etats_accessibles(automate, get_element(it_etat)));
+		ajouter_element(etats, get_element(it_etat));
 	}
 
 	// On détermine les états qui ne sont pas accessibles => ceux qui sont dans get_etats mais pas dans etats
