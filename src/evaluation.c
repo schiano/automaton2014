@@ -217,6 +217,62 @@ int test_creer_automate(){
 	return result;
 }
 
+int test_etats_accessibles()
+{
+	BEGIN_TEST;
+
+	int result = 1;
+	Automate* automate = creer_automate();
+	ajouter_etat_initial(automate, 1);
+	ajouter_transition(automate, 1, 'b', 2);
+	ajouter_transition(automate, 1, 'a', 3);
+	ajouter_transition(automate, 2, 'a', 1);
+	ajouter_transition(automate, 2, 'c', 3);
+	ajouter_transition(automate, 4, 'a', 3);
+	ajouter_transition(automate, 4, 'b', 5);
+	ajouter_etat_final(automate, 3);
+
+	Ensemble* ens = etats_accessibles(automate, 1);
+
+	TEST( 
+		1
+		&& ens
+		&& est_dans_l_ensemble( ens, 1)
+		&& est_dans_l_ensemble( ens, 2)
+		&& ! est_dans_l_ensemble( ens, 4)
+		&& ! est_dans_l_ensemble( ens, 5)
+		&& est_dans_l_ensemble( ens, 3)
+		, result
+	);
+
+	liberer_ensemble(ens);
+	liberer_automate(automate);
+	return result;
+}
+
+int test_automate_co_accessibles()
+{
+	BEGIN_TEST;
+
+	int result = 1;
+	Automate* automate = creer_automate();
+	Ensemble* ens = etats_co_accessibles(automate, 1);
+
+	TEST( 
+		1
+		&& ens
+		&& est_dans_l_ensemble( ens, 1)
+		&& est_dans_l_ensemble( ens, 2)
+		&& est_dans_l_ensemble( ens, 4)
+		&& est_dans_l_ensemble( ens, 4)
+		&& !est_dans_l_ensemble( ens, 5)
+		, result
+	);
+
+	liberer_ensemble(ens);
+	liberer_automate(automate);
+	return result;
+}
 
 int test_delta_delta_star(){
 	BEGIN_TEST;
@@ -224,6 +280,7 @@ int test_delta_delta_star(){
 	int result = 1;
 
 	Automate* automate = creer_automate();
+	liberer_automate(automate);
 
 
 	ajouter_etat( automate, 3 );
