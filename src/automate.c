@@ -474,7 +474,7 @@ Automate * mot_to_automate(const char * mot){
 	{
 		ajouter_transition(res, i+1, mot[i], i+2);
 	}
-	ajouter_etat_final(res, i+1);
+	ajouter_etat_final(res, length+1);
 	return res;
 }
 
@@ -774,7 +774,7 @@ Automate * creer_automate_de_concatenation(
 	 * On créé un automate, copie de automate1 avec comme états finaux ceux de automate2
 	 */
 	 Automate* concat = copier_automate(automate1);
-	 deplacer_ensemble(concat->finaux, automate2->finaux);
+	 deplacer_ensemble(concat->finaux, copier_ensemble(automate2->finaux));
 
 
 	/**
