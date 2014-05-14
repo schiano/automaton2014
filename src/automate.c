@@ -466,7 +466,7 @@ int get_min_etat( const Automate* automate ){
  */
 Automate * mot_to_automate(const char * mot){
 	Automate* res = creer_automate();
-	int length = sizeof(mot) / sizeof(char);
+	int length = strlen(mot);
 
 	int i;
 	ajouter_etat_initial(res, 1);
