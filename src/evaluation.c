@@ -343,7 +343,7 @@ int test_execute_fonctions(){
 		ajouter_lettre( automate, 'a' );
 	if( result ) liberer_automate( result );
 	liberer_automate( automate );
-
+	
 	automate  = creer_automate();
 	result = NULL;
 		ajouter_etat_final( automate, 1 );
@@ -465,6 +465,7 @@ int test_execute_fonctions(){
 	if( result ) liberer_automate( result );
 	liberer_automate( automate );
 	liberer_automate( automate2 );
+	printf("toto\n");
 
 	automate  = creer_automate();
 	result = NULL;
@@ -522,6 +523,32 @@ int test_automate_vide(){
 
 }
 
+int test_mot_to_automate(){
+	BEGIN_TEST;
+	int result = 1;
+
+	Automate* automate = mot_to_automate("abbaa");
+
+	TEST(le_mot_est_reconnu(automate, "abbaa"), result);
+	TEST(est_un_etat_de_l_automate(automate, 1), result);
+	TEST(est_un_etat_de_l_automate(automate, 2), result);
+	TEST(est_un_etat_de_l_automate(automate, 3), result);
+	TEST(est_un_etat_de_l_automate(automate, 4), result);
+	TEST(est_un_etat_de_l_automate(automate, 5), result);
+	TEST(est_un_etat_de_l_automate(automate, 6), result);
+	TEST(est_un_etat_initial_de_l_automate(automate, 1), result);
+	TEST(est_un_etat_final_de_l_automate(automate, 6), result);
+	TEST(est_une_transition_de_l_automate(automate, 1, 'a', 2), result);
+	TEST(est_une_transition_de_l_automate(automate, 2, 'b', 3), result);
+	TEST(est_une_transition_de_l_automate(automate, 3, 'b', 4), result);
+	TEST(est_une_transition_de_l_automate(automate, 4, 'a', 5), result);
+	TEST(est_une_transition_de_l_automate(automate, 5, 'a', 6), result);
+
+	liberer_automate(automate);
+
+	return result;
+}
+
 int main(){
 	nb_test = 0;
 	nb_total_test = 0;
@@ -532,6 +559,9 @@ int main(){
 	ajouter_test( test_creer_automate );
 	ajouter_test( test_mot_accepte );
 	ajouter_test( test_automate_vide );
+
+	// Mot to automate
+	ajouter_test( test_mot_to_automate );
 
 	set_all_sigactions();
 	
