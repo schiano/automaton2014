@@ -289,9 +289,7 @@ int test_delta_delta_star(){
 	int result = 1;
 
 	Automate* automate = creer_automate();
-	liberer_automate(automate);
-
-
+	
 	ajouter_etat( automate, 3 );
 	ajouter_etat( automate, 5 );
 	ajouter_transition( automate, 3, 'a', 5 );
