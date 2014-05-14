@@ -478,13 +478,6 @@ Automate * mot_to_automate(const char * mot){
 	return res;
 }
 
-
-Automate * creer_automate_des_sur_mots(
-	const Automate* automate, Ensemble * alphabet
-){
-	A_FAIRE_RETURN(NULL);
-}
-
 /**
  * \par Implémentation
  * La fonction calcule l'ensemble des états accessibles à partir d'un état donné </br>
